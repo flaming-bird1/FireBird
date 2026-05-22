@@ -1,0 +1,45 @@
+{
+  "name": "firebird-blog-vue",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "build:github": "cross-env DEPLOY_ENV=github vite build",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "dompurify": "^3.3.0",
+    "element-plus": "^2.13.2",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "marked": "^16.4.1",
+    "mermaid": "^11.12.0",
+    "pdfjs-dist": "^5.4.296",
+    "pinia": "^2.3.1",
+    "sharp": "^0.34.5",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node22": "^22.0.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.13.1",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "cross-env": "^10.1.0",
+    "gh-pages": "^6.3.0",
+    "npm-run-all2": "^7.0.2",
+    "sass": "^1.99.0",
+    "sass-loader": "^16.0.7",
+    "typescript": "~5.7.3",
+    "vite": "^6.0.11",
+    "vite-plugin-vue-devtools": "^7.7.1",
+    "vue-tsc": "^2.2.0"
+  }
+}

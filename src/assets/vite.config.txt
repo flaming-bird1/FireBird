@@ -1,0 +1,33 @@
+import { fileURLToPath, URL } from 'node:url'
+
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import vueDevTools from 'vite-plugin-vue-devtools'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    vue(),
+    vueDevTools(),
+  ],
+  // 添加对 .md 文件的处理
+  assetsInclude: ['**/*.md'],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    },
+  },
+  // 部署相关
+  base: './',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: 'esbuild', // 改为使用 esbuild，这是 Vite 默认的压缩工具
+    // 移除 terserOptions 配置
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 5189
+  }
+})
