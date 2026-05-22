@@ -47,7 +47,7 @@
                     </p>
                   </div>
 
-                  <!-- 图片展示区域 -->
+                  <!--   图片展示区域-->
                   <div class="image-grid">
                     <div
                         class="image-item"
@@ -55,10 +55,11 @@
                         :key="index"
                         @click="viewImage(moment.images, index)"
                     >
-                      <img :src="getImageUrl(image)" :alt="'动态图片'+(index+1)">
+                      <img :src="image" :alt="'动态图片'+(index+1)">
                     </div>
                   </div>
                 </div>
+
 
               </div>
 
@@ -79,10 +80,14 @@
               <p class="author-bio">追求·奋斗·拼搏·热爱</p>
               <div class="author-stats">
                 <div class="stat-item">
+                  <!--                  <span class="stat-number">{{ total }}</span>-->
+                  <!--                  <span class="stat-label">文章</span>-->
                   <span class="stat-number">{{ lifeStats.totalMoments }}</span>
                   <span class="stat-label">动态</span>
                 </div>
                 <div class="stat-item">
+                  <!--                  <span class="stat-number">4</span>-->
+                  <!--                  <span class="stat-label">分类</span>-->
                   <span class="stat-number">{{ lifeStats.totalPhotos }}</span>
                   <span class="stat-label">照片</span>
                 </div>
@@ -133,25 +138,6 @@ const showImageViewer = ref(false)
 const currentImages = ref<string[]>([])
 const currentImageIndex = ref(0)
 
-// 获取 base 路径（GitHub Pages 需要 /FireBird/）
-const baseUrl = import.meta.env.BASE_URL
-
-// 处理图片路径
-const getImageUrl = (path: string) => {
-  // 如果已经是完整 URL，直接返回
-  if (path.startsWith('http://') || path.startsWith('https://')) {
-    return path
-  }
-  // 如果以 @ 开头，直接返回（由 Vite 处理）
-  if (path.startsWith('@')) {
-    return path
-  }
-  // 去掉开头的 /（如果有）
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path
-  // 添加 base 路径
-  return `${baseUrl}${cleanPath}`
-}
-
 // 计算属性
 const currentImage = computed(() => {
   return currentImages.value[currentImageIndex.value]
@@ -159,16 +145,25 @@ const currentImage = computed(() => {
 
 // 初始化数据
 onMounted(() => {
+  // 为每个动态添加显示评论的状态
+  /**
+   * .map()：数组方法，遍历原数组并返回新数组
+   * ...moment：展开运算符，复制原动态对象的所有属性
+   * showComments: false：为每个动态对象添加一个新属性
+   */
   lifeMoments.value = getLifeMomentsSorted().map(moment => ({
-    ...moment,
+    // id: moment.id,
+    // location: moment.location,
+    // content: moment.content,
+    // images: moment.images,
+    // createTime: moment.createTime,
+    ...moment, // 浅拷贝
     showComments: false
   }))
 })
 
 const viewImage = (images: string[], index: number) => {
-  // 处理图片路径
-  const processedImages = images.map(img => getImageUrl(img))
-  currentImages.value = processedImages
+  currentImages.value = images
   currentImageIndex.value = index
   showImageViewer.value = true
 }

@@ -1,11 +1,24 @@
 <template>
   <div class="home-page">
     <Header></Header>
+    <!--    <header-tech-vision></header-tech-vision>-->
     <!--   横幅-->
     <div class="banner">
+      <!-- 国风背景元素 -->
+      <div class="chinese-bg-elements">
+        <div class="mountain-left"></div>
+        <div class="mountain-right"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+        <div class="bamboo bamboo-1"></div>
+        <div class="bamboo bamboo-2"></div>
+      </div>
+
       <div class="banner-content">
         <h1>烈焰飞鸟的个人博客</h1>
         <p class="typing-text">不负青春 不负韶华</p>
+        <div class="chinese-border"></div>
       </div>
     </div>
     <!--    内容-->
@@ -14,7 +27,14 @@
         <!--        左侧主要内容-->
         <div class="main-content">
           <section class="section animate-on-scroll">
-            <h2 class="section-title">最新文章</h2>
+            <div class="section-header">
+              <div class="chinese-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path fill="currentColor" d="M3,18H21V16H3V18M3,13H21V11H3V13M3,6V8H21V6H3Z"/>
+                </svg>
+              </div>
+              <h2 class="section-title">最新文章</h2>
+            </div>
             <div class="articles-list">
               <article
                   class="article-item animate-on-scroll"
@@ -22,29 +42,43 @@
                   :key="article.id"
                   @click="goToArticle(article.id)"
               >
-                <!--              文章封面-->
+                <!-- 文章封面 -->
                 <div class="article-cover">
+                  <div class="chinese-corner tl"></div>
+                  <div class="chinese-corner tr"></div>
+                  <div class="chinese-corner bl"></div>
+                  <div class="chinese-corner br"></div>
                   <img :src="article.cover"
                        :alt="article.title"
                        class="cover-image">
-                  <!--  <div class="cover-image">dd</div>-->
                 </div>
                 <div class="article-card">
                   <!--   包裹所有元信息（日期、标签等），便于统一控制样式或布局。-->
                   <div class="article-meta">
-                    <time class="article-date">{{ formatDate(article.date) }}</time>
+                    <time class="article-date">
+                      <span class="date-icon">📅</span> {{ formatDate(article.date) }}
+                    </time>
                     <span class="article-tags">
                       <span
                           class="tag"
                           v-for="tag in article.tags"
                           :key="tag"
-                      >{{ tag }}</span>
+                      >
+                        <span class="tag-icon">🏷️</span> {{ tag }}
+                      </span>
                     </span>
                   </div>
-                  <h3 class="article-title"> {{ article.title }}</h3>
+                  <h3 class="article-title">
+                    <span class="title-decoration">「</span>
+                    {{ article.title }}
+                    <span class="title-decoration">」</span>
+                  </h3>
                   <p class="article-description">{{ article.description }}</p>
                   <div class="article-footer">
-                    <span class="read-more">阅读更多 →</span>
+                    <span class="read-more">
+                      阅读更多
+                      <span class="arrow-icon">→</span>
+                    </span>
                   </div>
                 </div>
               </article>
@@ -60,7 +94,7 @@
                 <img src="@/assets/images/logo.png" alt="作者头像">
               </div>
               <h3 class="author-name">烈焰飞鸟</h3>
-              <p class="author-bio">心怀热爱，永远是当打之年！</p>
+              <p class="author-bio">追求·奋斗·拼搏·热爱</p>
               <div class="author-stats">
                 <div class="stat-item">
                   <span class="stat-number">{{ total }}</span>
@@ -85,17 +119,32 @@
               </div>
             </div>
           </section>
+
+          <!-- 新增：国风名言组件 -->
+          <section class="widget chinese-quote">
+            <div class="quote-content">
+              <div class="quote-icon">「</div>
+              <p class="quote-text">博观而约取，厚积而薄发</p>
+              <div class="quote-icon">」</div>
+              <p class="quote-author">—— 苏轼</p>
+            </div>
+          </section>
         </div>
       </div>
     </div>
-  </div>
 
+    <!-- 底部装饰 -->
+    <div class="bottom-decoration">
+      <div class="wave"></div>
+    </div>
+  </div>
 </template>
+
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted} from 'vue'
 import {useRouter} from 'vue-router'
 import Header from '@/components/Header.vue'
-import {getAllArticles, getAllTags} from '@/data/articles.ts'
+import {getAllArticles} from '@/data/articles.ts'
 import type {Article} from '@/types/article'
 import {useScrollAnimation} from "@/utils/animations.ts";
 
@@ -112,20 +161,22 @@ onMounted(() => {
   recentArticles.value = articlesData.articles
   // 获取总数据
   total.value = articlesData.total
-  // console.log(recentArticles.value)
 
   // 添加滚动动画 - 使用异步确保数据渲染完成
   setTimeout(() => {
     initScrollAnimation()
   }, 200)
 })
+
 onUnmounted(() => {
   destroy()
 })
+
 // 跳转到文章详情
 const goToArticle = (id: string) => {
   router.push(`/article/${id}`)
 }
+
 // 格式化日期
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN', {
@@ -134,80 +185,174 @@ const formatDate = (dateString: string) => {
     day: 'numeric'
   })
 }
-
-
 </script>
 
-
 <style scoped>
+.home-page {
+  background: transparent;
+  min-height: 100vh;
+}
 
+/* 国风横幅样式 */
 .banner {
-  margin-top: 67px; /* 头部固定高度 */
-  /*padding: 67px 20px 0;*/
-  /*margin-top: 67px; /* 头部高度，但会遮挡头部 */
+  margin-top: 67px;
   padding: 0 20px;
   height: calc(100vh - 67px);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column; /*弹性项目将沿垂直方向（从上到下）排列*/
   text-align: center;
   color: white;
-
   position: relative;
   overflow: hidden;
-  /*  background: rgba(75, 0, 130, 0.3);*/
-  /* 渐变遮罩背景 */
   background: linear-gradient(
       135deg,
-      rgba(110, 95, 125, 0.4) 0%, /* 深紫色变体 */
-      rgba(126, 107, 143, 0.3) 50%, /* 主色调 #7E6B8F */
-      rgba(150, 135, 165, 0.2) 100% /* 浅紫色变体 */
+      rgba(110, 95, 125, 0.4) 0%, /* 深紫色变体 */ rgba(126, 107, 143, 0.3) 50%, /* 主色调 #7E6B8F */ rgba(150, 135, 165, 0.2) 100% /* 浅紫色变体 */
   );
 }
 
-.banner::before {
+/* 国风背景元素 */
+.chinese-bg-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.mountain-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 300px;
+  height: 200px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.6) 0%, transparent 100%);
+  clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
+  opacity: 0.4;
+}
+
+.mountain-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 250px;
+  height: 180px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.5) 0%, transparent 100%);
+  clip-path: polygon(0% 100%, 100% 100%, 60% 0%);
+  opacity: 0.4;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 100px;
+  height: 40px;
+  top: 20%;
+  left: 10%;
+  animation: float 20s infinite linear;
+}
+
+.cloud-2 {
+  width: 150px;
+  height: 50px;
+  top: 30%;
+  right: 15%;
+  animation: float 25s infinite linear reverse;
+}
+
+.cloud-3 {
+  width: 80px;
+  height: 30px;
+  top: 40%;
+  left: 20%;
+  animation: float 18s infinite linear;
+}
+
+.bamboo {
+  position: absolute;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.8), rgba(161, 145, 178, 0.6));
+}
+
+.bamboo-1 {
+  left: 20%;
+  height: 150px;
+  transform: rotate(5deg);
+}
+
+.bamboo-2 {
+  right: 25%;
+  height: 120px;
+  transform: rotate(-5deg);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(20px) translateY(-10px);
+  }
 }
 
 .banner-content {
   position: relative;
   z-index: 2;
   max-width: 800px;
-  /*background: rgba(0, 0, 0, 0.3); /* 只在内容区域添加遮罩 */
-  /*backdrop-filter: blur(5px); /* 毛玻璃效果 */
 }
+
 
 .banner h1 {
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  letter-spacing: 2px; /* 字符间距 */
+  font-family: "STKaiti", "KaiTi", serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 3px;
 }
 
-/**
- * 创建一个名为 typing 的动画，它将元素从左到右显示。
- * margin-top: 1.5rem;设置 <p> 标签顶部的外边距为 1.5rem，用于与上方元素拉开距离。
- * min-height: 2.5rem;设置 <p> 标签的最小高度为 2.5rem，确保即使文本内容较少，也能保持一定高度（避免布局抖动）。
- * overflow: hidden;隐藏超出 <p> 标签范围的内容，配合后续的打字效果，让未显示的文字暂时隐藏。
- * border-right: 2px solid rgba(255, 255, 255, 0.75);在 <p> 标签右侧添加一个 2px 宽的白色半透明边框，模拟打字时的光标。
- * white-space: nowrap;强制文本在一行内显示，不换行（确保打字效果是横向逐字展开，而非换行）。
- * animation: typing 3.5s steps(7, end), blink-caret 0.75s step-end infinite;同时应用两个动画：
-    * typing：时长 3.5 秒，通过 steps(7, end) 定义 “7 步完成动画”（即逐字显示 7 个字符），实现打字机逐字输出的效果。
-    * blink-caret：时长 0.75 秒，通过 step-end infinite 定义 “步进式闪烁且无限循环”，实现光标闪烁的效果。
- */
-.banner p {
+.typing-text {
   font-size: 1.8rem;
-  /*margin-top: 1.5rem;*/
   min-height: 2.5rem;
   overflow: hidden;
-  border-right: 4px solid rgba(255, 255, 255, 0.75);
+  border-right: 4px solid rgba(255, 255, 255, 0.9);
   white-space: nowrap;
-  width: 240px; /* 根据文字实际宽度设置 */
-  margin: 1.5rem auto 0; /* 水平居中 */
+  width: 240px;
+  margin: 1.5rem auto 0;
   animation: typing 3.5s steps(7, end), blink-caret 0.75s step-end infinite;
+  font-family: "STKaiti", "KaiTi", serif;
+  color: rgba(255, 255, 255, 0.95);
 }
 
-/*打字机逐字显示动画*/
+.chinese-border {
+  width: 300px;
+  height: 4px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9), transparent);
+  margin: 2rem auto 0;
+  position: relative;
+}
+
+.chinese-border::before,
+.chinese-border::after {
+  content: '卍';
+  position: absolute;
+  top: -15px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.5rem;
+}
+
+.chinese-border::before {
+  left: 0;
+}
+
+.chinese-border::after {
+  right: 0;
+}
+
 @keyframes typing {
   from {
     width: 0
@@ -222,7 +367,7 @@ const formatDate = (dateString: string) => {
     border-color: transparent
   }
   50% {
-    border-color: rgba(255, 255, 255, 0.75)
+    border-color: rgba(255, 255, 255, 0.9)
   }
 }
 
@@ -230,16 +375,17 @@ const formatDate = (dateString: string) => {
 .content {
   min-height: 100vh;
   padding: 4rem 0;
+  background: transparent;
 }
 
 .container {
-  max-width: 1170px; /* 最大宽度为1200px（在大屏幕上限制内容宽度） */
-  margin: 0 auto; /* 水平居中（左右外边距自动） */
-  padding: 0 20px; /* 左右内边距20px（防止内容紧贴屏幕边缘） */
-  display: grid; /* 启用CSS Grid布局 */
-  grid-template-columns: 1fr 350px; /* 定义两列：第一列占剩余空间(1fr)，第二列固定350px */
-  gap: 3rem; /* 网格间隙为3rem（列与列之间的间距） */
-  align-items: start; /* 网格项顶部对齐（避免内容拉伸对齐） */
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 3rem;
+  align-items: start;
 }
 
 /* 文章列表样式 */
@@ -247,114 +393,215 @@ const formatDate = (dateString: string) => {
   margin-bottom: 3rem;
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.chinese-icon {
+  color: #7E6B8F;
+  font-size: 1.5rem;
+}
+
 .section-title {
   font-size: 1.8rem;
-  color: #c5a7df;
-  margin-bottom: 1.5rem;
+  color: #7E6B8F;
+  margin: 0;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #7E6B8F;
+  font-family: "STKaiti", "KaiTi", serif;
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #7E6B8F;
 }
 
 .articles-list {
-  display: flex; /* 启用 Flexbox 布局 */
-  flex-direction: column; /* 子元素垂直排列（纵向布局） */
-  gap: 1.5rem; /* 子元素之间的间距为 1.5rem */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .article-item {
-  display: grid; /* 启用Grid布局 */
-  grid-template-columns: 300px 1fr; /* 两列布局：封面固定300px，内容占剩余空间 */
-  gap: 1.5rem; /* 列间距1.5rem */
-  background: white; /* 白色背景 */
-  border-radius: 12px; /* 圆角12px */
-  overflow: hidden; /* 隐藏子元素超出圆角的部分 */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 轻微阴影效果 */
-  transition: all 0.3s ease; /* 所有属性变化时添加0.3秒过渡动画 */
-  cursor: pointer; /* 鼠标悬停时显示手型指针 */
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(126, 107, 143, 0.2);
+  position: relative;
 }
 
 .article-item:hover {
-  transform: translateY(-2px); /* 悬停时向上移动2像素*/
-  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.2); /* 悬停时阴影变浅 */
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(126, 107, 143, 0.25);
+  border-color: #7E6B8F;
 }
 
-/* 文章封面样式 */
 .article-cover {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #f5f5f5; /* 可选：添加背景色便于调试 */
+  background: rgba(245, 245, 245, 0.8);
+}
+
+.chinese-corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #7E6B8F;
+  z-index: 2;
+}
+
+.tl {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.tr {
+  top: 10px;
+  right: 10px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.bl {
+  bottom: 10px;
+  left: 10px;
+  border-right: none;
+  border-top: none;
+}
+
+.br {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
 }
 
 .cover-image {
-  /*margin-left: 2rem;*/
   width: 100%;
-  object-fit: contain; /* 保持图片比例，完整显示在容器中 */
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.article-item:hover .cover-image {
+  transform: scale(1.05);
 }
 
 .article-card {
-  background: #e1d8e8; /* 背景色 */
-  border-radius: 12px; /* 圆角12像素（柔和的边角） */
-  padding: 1.5rem; /* 内边距1.5rem（内容与边框的间距） */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 轻微阴影（提升立体感） */
-  transition: all 0.3s ease; /* 所有属性变化时启用0.3秒平滑过渡 */
-  cursor: pointer; /* 鼠标悬停时显示手型指针（暗示可点击） */
+  padding: 1.5rem;
+  position: relative;
 }
 
+.article-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, #7E6B8F, #9D8DB0);
+  border-radius: 2px;
+}
 
 .article-meta {
-  display: flex; /* 启用 Flexbox 布局 */
-  justify-content: space-between; /* 子元素两端对齐，中间自动分配空间 */
-  align-items: center; /* 子元素垂直居中 */
-  margin-bottom: 1rem; /* 底部外边距 1rem（与下方内容间隔） */
-  font-size: 0.9rem; /* 字体大小缩小为 0.9rem */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.date-icon, .tag-icon {
+  margin-right: 5px;
 }
 
 .article-date {
-  color: black;
-  font-size: 1rem; /* 字体大小与根元素相同 */
+  display: flex;
+  align-items: center;
+  color: #7E6B8F;
 }
 
 .article-tags {
   display: flex;
-  gap: 0.5rem; /* 标签之间的间距为 0.5rem */
+  gap: 0.5rem;
 }
 
 .tag {
-  background: rgba(126, 107, 143, 0.1); /* 半透明淡紫色背景 */
-  color: black; /* 黑色文字 */
-  padding: 0.2rem 0.6rem; /* 上下0.2rem，左右0.6rem的内边距 */
-  border-radius: 12px; /* 圆角效果 */
-  font-size: 1rem; /* 字体大小与根元素相同 */
+  background: rgba(126, 107, 143, 0.1);
+  color: #7E6B8F;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(126, 107, 143, 0.2);
+  display: flex;
+  align-items: center;
 }
 
 .article-title {
-  font-size: 1.3rem; /* 字体大小为1.3倍根元素（通常约20.8px） */
-  color: #2c3e50; /* 深蓝灰色文字 */
-  margin-bottom: 0.8rem; /* 底部外边距0.8rem（与下方内容间隔） */
-  line-height: 1.4; /* 行高为字体的1.4倍，增强可读性 */
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  font-family: "STKaiti", "KaiTi", serif;
+}
+
+.title-decoration {
+  color: #7E6B8F;
+  font-family: "SimSun", serif;
 }
 
 .article-description {
-  color: #666; /* 中灰色文字 */
-  line-height: 1.6; /* 行高为字体的1.6倍 */
-  margin-bottom: 1rem; /* 底部外边距1rem */
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
 .article-footer {
-  display: flex; /* 启用Flexbox布局 */
-  justify-content: flex-end; /* 子元素靠右对齐 */
+  display: flex;
+  justify-content: flex-end;
 }
 
 .read-more {
   color: #7E6B8F;
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
-.article-card:hover .read-more {
-  color: #6D8B74;
+.arrow-icon {
+  transition: transform 0.3s ease;
+}
+
+.article-item:hover .read-more {
+  color: #9D8DB0;
+}
+
+.article-item:hover .arrow-icon {
+  transform: translateX(5px);
 }
 
 /* 侧边栏样式 */
@@ -365,23 +612,25 @@ const formatDate = (dateString: string) => {
 }
 
 .widget {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
+  border: 1px solid rgba(126, 107, 143, 0.2);
 }
 
 .author-card {
   text-align: center;
 }
 
+
 .author-avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  margin: 0 auto 1rem;
-  border: 3px solid #7E6B8F;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  margin: 0 auto;
 }
 
 .author-avatar img {
@@ -392,23 +641,36 @@ const formatDate = (dateString: string) => {
 
 .author-name {
   font-size: 1.3rem;
-  color: #2c3e50;
+  color: #7E6B8F;
   margin-bottom: 0.5rem;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .author-bio {
   color: #666;
   margin-bottom: 1.5rem;
   font-style: italic;
+  border-left: 3px solid #7E6B8F;
+  padding-left: 10px;
 }
 
 .author-stats {
   display: flex;
-  justify-content: space-around; /* 均等分 */
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
 }
 
 .stat-item {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+  color: #7E6B8F;
 }
 
 .stat-number {
@@ -416,6 +678,7 @@ const formatDate = (dateString: string) => {
   font-size: 1.5rem;
   font-weight: bold;
   color: #7E6B8F;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .stat-label {
@@ -438,58 +701,106 @@ const formatDate = (dateString: string) => {
   border-radius: 8px;
   text-align: center;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .social-link:hover {
   background: #7E6B8F;
   color: white;
   border-color: #7E6B8F;
+  transform: translateY(-2px);
 }
 
+.social-icon {
+  font-size: 1.2rem;
+}
 
-/* 添加滚动动画样式 */
+/* 国风名言组件 */
+.chinese-quote {
+  background: linear-gradient(135deg, rgba(126, 107, 143, 0.1), rgba(126, 107, 143, 0.05));
+  border-left: 5px solid #7E6B8F;
+}
+
+.quote-content {
+  text-align: center;
+}
+
+.quote-icon {
+  font-size: 2rem;
+  color: #7E6B8F;
+  font-family: "SimSun", serif;
+  line-height: 1;
+}
+
+.quote-text {
+  font-size: 1.2rem;
+  color: #7E6B8F;
+  margin: 1rem 0;
+  font-family: "STKaiti", "KaiTi", serif;
+  line-height: 1.6;
+}
+
+.quote-author {
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* 底部装饰 */
+.bottom-decoration {
+  position: relative;
+  height: 100px;
+  overflow: hidden;
+  margin-top: -50px;
+}
+
+.wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(transparent, rgba(126, 107, 143, 0.8));
+  clip-path: ellipse(50% 100% at 50% 100%);
+}
+
+/* 滚动动画样式 */
 .animate-on-scroll {
-  opacity: 0; /* 初始透明度为0，素初始状态是隐藏的 */
-  /**
-    * all：对所有可过渡的 CSS 属性应用动画效果
-    * ease-out：缓动函数，动画开始时快，结束时慢
-   */
-  transform: translateY(30px); /* 添加初始位置  */
+  opacity: 0;
+  transform: translateY(30px);
   transition: all 0.9s ease-out;
 }
 
-/* 进入视口时的动画状态 */
 .animate-on-scroll.animate-in {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* 离开视口时的动画状态（向上滚动） */
 .animate-on-scroll.animate-out {
   opacity: 0;
   transform: translateY(30px);
 }
 
-
-/* 在现有样式后添加响应式样式 */
-
-/* 大屏幕平板 (1024px 及以下) */
+/* 响应式样式 */
 @media (max-width: 1024px) {
   .container {
-    grid-template-columns: 1fr 300px; /* 侧边栏稍微变窄 */
+    grid-template-columns: 1fr 300px;
     gap: 2rem;
   }
 
   .article-item {
-    grid-template-columns: 250px 1fr; /* 封面图片变窄 */
+    grid-template-columns: 250px 1fr;
   }
 }
 
-/* 平板设备 (768px 及以下) */
 @media (max-width: 768px) {
   .banner {
-    height: 50vh; /* 降低横幅高度 */
-    margin-top: 60px; /* 对应Header的响应式高度 */
+    height: 50vh;
+    margin-top: 60px;
   }
 
   .banner h1 {
@@ -502,6 +813,13 @@ const formatDate = (dateString: string) => {
     animation: typing 2.5s steps(7, end), blink-caret 0.75s step-end infinite;
   }
 
+  .chinese-seal {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    top: -30px;
+  }
+
   @keyframes typing {
     from {
       width: 0
@@ -512,35 +830,34 @@ const formatDate = (dateString: string) => {
   }
 
   .container {
-    grid-template-columns: 1fr; /* 单列布局 */
+    grid-template-columns: 1fr;
     gap: 2rem;
     padding: 0 15px;
   }
 
   .sidebar {
-    order: -1; /* 侧边栏移到主内容前面 */
+    order: -1;
   }
 
   .article-item {
-    grid-template-columns: 1fr; /* 单列布局 */
+    grid-template-columns: 1fr;
     gap: 0;
   }
 
   .article-cover {
-    height: 200px; /* 固定封面高度 */
+    height: 200px;
   }
 
   .cover-image {
     height: 100%;
-    object-fit: cover; /* 保持图片比例并填充容器 */
+    object-fit: cover;
   }
 }
 
-/* 手机设备 (480px 及以下) */
 @media (max-width: 480px) {
   .banner {
     height: 40vh;
-    margin-top: 55px; /* 对应Header的响应式高度 */
+    margin-top: 55px;
     padding: 0 15px;
   }
 
@@ -553,6 +870,13 @@ const formatDate = (dateString: string) => {
     font-size: 1.2rem;
     width: 150px;
     animation: typing 2s steps(7, end), blink-caret 0.75s step-end infinite;
+  }
+
+  .chinese-seal {
+    width: 50px;
+    height: 50px;
+    font-size: 1.8rem;
+    top: -25px;
   }
 
   @keyframes typing {
@@ -582,7 +906,7 @@ const formatDate = (dateString: string) => {
   }
 
   .article-meta {
-    flex-direction: column; /* 垂直排列 */
+    flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
@@ -592,24 +916,24 @@ const formatDate = (dateString: string) => {
   }
 
   .author-stats {
-    flex-direction: column; /* 垂直排列统计信息 */
+    flex-direction: column;
     gap: 1rem;
   }
 
   .social-links {
-    flex-direction: row; /* 水平排列社交链接 */
-    flex-wrap: wrap; /* 允许换行 */
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
   }
 
   .social-link {
-    flex: 1; /* 平均分配宽度 */
-    min-width: 80px; /* 最小宽度 */
+    flex: 1;
+    min-width: 80px;
     padding: 0.6rem;
+    font-size: 0.9rem;
   }
 }
 
-/* 小屏幕手机 (360px 及以下) */
 @media (max-width: 360px) {
   .banner h1 {
     font-size: 1.8rem;

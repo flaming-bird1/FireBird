@@ -48,7 +48,7 @@
                   <div class="chinese-corner tr"></div>
                   <div class="chinese-corner bl"></div>
                   <div class="chinese-corner br"></div>
-                  <img :src="article.cover"
+                  <img :src="getImageUrl(article.cover)"
                        :alt="article.title"
                        class="cover-image">
                 </div>
@@ -151,6 +151,30 @@ import {useScrollAnimation} from "@/utils/animations.ts";
 const router = useRouter()
 const {initScrollAnimation, destroy} = useScrollAnimation()
 
+// 获取 base 路径（GitHub Pages 需要 /FireBird/）
+const baseUrl = import.meta.env.BASE_URL
+
+
+// 处理图片路径（支持 undefined）
+const getImageUrl = (path: string | undefined) => {
+  // 如果路径为空或未定义，返回默认图片
+  if (!path) {
+    return `${baseUrl}images/default-cover.jpg`
+  }
+  // 如果已经是完整 URL，直接返回
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  // 如果以 @ 开头，直接返回（由 Vite 处理）
+  if (path.startsWith('@')) {
+    return path
+  }
+  // 去掉开头的 /（如果有）
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path
+  // 添加 base 路径
+  return `${baseUrl}${cleanPath}`
+}
+
 // 响应式数据
 const recentArticles = ref<Article[]>([])
 let total = ref(0)
@@ -159,7 +183,6 @@ let total = ref(0)
 onMounted(() => {
   const articlesData = getAllArticles()
   recentArticles.value = articlesData.articles
-  // 获取总数据
   total.value = articlesData.total
 
   // 添加滚动动画 - 使用异步确保数据渲染完成

@@ -2,7 +2,7 @@
 <template>
   <div class="article-detail-page">
     <Header></Header>
-<!--    <header-tech-vision></header-tech-vision>-->
+    <!--    <header-tech-vision></header-tech-vision>-->
 
     <!-- 文章内容 -->
     <div class="content">
@@ -36,19 +36,19 @@
             <!-- PDF 文件 -->
             <PDFViewer
                 v-if="article?.fileType === 'pdf' && article?.fileName"
-                :file-path="`/articles/${article.fileName}.pdf`"
+                :file-path="getFilePath(article)"
             />
 
             <!-- 或者使用简单版本 -->
             <!-- <SimplePDFViewer
               v-if="article?.fileType === 'pdf' && article?.fileName"
-              :file-path="`/articles/${article.fileName}.pdf`"
+              :file-path="getFilePath(article)"
             /> -->
 
             <!-- Markdown 文件 -->
             <MarkdownViewer
                 v-else-if="article && article.fileName"
-                :file-path="`/articles/${article.fileName}.md`"
+                :file-path="getFilePath(article)"
                 @headings-updated="handleHeadingsUpdate"
             />
           </div>
@@ -141,6 +141,9 @@ import PDFViewer from "@/components/PDFViewer.vue";
 const route = useRoute()
 const router = useRouter()
 
+// 获取 base 路径（GitHub Pages 需要 /FireBird/）
+const baseUrl = import.meta.env.BASE_URL
+
 // 响应式数据
 const article = ref<Article | null>(null)
 const headings = ref<Array<{id: string, text: string, level: number}>>([])
@@ -158,6 +161,7 @@ const calculateTocPosition = () => {
     tocOffsetTop.value = rect.top + window.scrollY
   }
 }
+
 // 修改滚动处理函数
 const handleScroll = () => {
   if (headings.value.length === 0) return
@@ -187,14 +191,18 @@ const handleScroll = () => {
   isTocFixed.value = scrollY > fixedThreshold
 }
 
-// 获取文件路径
+// 获取文件路径（添加 base 路径）
 const getFilePath = (article: Article) => {
-  if (article.fileType === 'pdf') {
-    return `/articles/${article.fileName}.pdf`
-  }
-  return `/articles/${article.fileName}.md`
-}
+  if (!article.fileName) return ''
 
+  // 去掉开头的 /（如果有）
+  const cleanPath = article.fileName.startsWith('/') ? article.fileName.slice(1) : article.fileName
+
+  if (article.fileType === 'pdf') {
+    return `${baseUrl}articles/${cleanPath}.pdf`
+  }
+  return `${baseUrl}articles/${cleanPath}.md`
+}
 
 // 加载文章元数据
 const loadArticle = () => {
@@ -228,28 +236,6 @@ const scrollToHeading = (id: string) => {
     activeHeadingId.value = id
   }
 }
-
-// // 监听滚动，更新激活的标题
-// const handleScroll = () => {
-//   if (headings.value.length === 0) return
-//
-//   const scrollPosition = window.scrollY + 120 // 提前激活的偏移量
-//
-//   // 找到当前激活的标题
-//   let currentActiveId = ''
-//   for (let i = headings.value.length - 1; i >= 0; i--) {
-//     const heading = headings.value[i]
-//     const element = document.getElementById(heading.id)
-//     if (element && element.offsetTop <= scrollPosition) {
-//       currentActiveId = heading.id
-//       break
-//     }
-//   }
-//
-//   if (currentActiveId) {
-//     activeHeadingId.value = currentActiveId
-//   }
-// }
 
 // 返回首页
 const goBack = () => {
@@ -288,15 +274,15 @@ onMounted(() => {
       calculateTocPosition()
     }, 100)
   })
-})
-// 监听窗口大小变化，重新计算位置
-onMounted(() => {
+
+  // 监听窗口大小变化，重新计算位置
   window.addEventListener('resize', calculateTocPosition)
 })
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', calculateTocPosition)
 })
 </script>
 
@@ -637,9 +623,5 @@ onUnmounted(() => {
 .toc-container::-webkit-scrollbar-thumb:hover {
   background: #7E6B8F;
 }
-
-
-
-
 
 </style>

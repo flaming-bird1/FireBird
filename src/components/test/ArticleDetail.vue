@@ -2,6 +2,7 @@
 <template>
   <div class="article-detail-page">
     <Header></Header>
+<!--    <header-tech-vision></header-tech-vision>-->
 
     <!-- 文章内容 -->
     <div class="content">
@@ -32,8 +33,21 @@
 
           <!-- 使用 MarkdownViewer 组件 -->
           <div class="article-content">
+            <!-- PDF 文件 -->
+            <PDFViewer
+                v-if="article?.fileType === 'pdf' && article?.fileName"
+                :file-path="`/articles/${article.fileName}.pdf`"
+            />
+
+            <!-- 或者使用简单版本 -->
+            <!-- <SimplePDFViewer
+              v-if="article?.fileType === 'pdf' && article?.fileName"
+              :file-path="`/articles/${article.fileName}.pdf`"
+            /> -->
+
+            <!-- Markdown 文件 -->
             <MarkdownViewer
-                v-if="article && article.fileName"
+                v-else-if="article && article.fileName"
                 :file-path="`/articles/${article.fileName}.md`"
                 @headings-updated="handleHeadingsUpdate"
             />
@@ -54,13 +68,13 @@
           <section class="widget">
             <div class="author-card">
               <div class="author-avatar">
-                <img src="../../assets/images/logo.png" alt="作者头像">
+                <img src="@/assets/images/logo.png" alt="作者头像">
               </div>
               <h3 class="author-name">烈焰飞鸟</h3>
               <p class="author-bio">心怀热爱，永远是当打之年！</p>
               <div class="author-stats">
                 <div class="stat-item">
-                  <span class="stat-number">25</span>
+                  <span class="stat-number">{{total}}</span>
                   <span class="stat-label">文章</span>
                 </div>
                 <div class="stat-item">
@@ -74,7 +88,7 @@
               </div>
               <!-- 社交连接-->
               <div class="social-links">
-                <a href="https://gitee.com/flaming-bird" target="_blank" class="social-link">GitHub</a>
+                <a href="https://github.com/flaming-bird1" target="_blank" class="social-link">GitHub</a>
                 <a href="https://gitee.com/flaming-bird" target="_blank" class="social-link">Gitee</a>
                 <a href="https://blog.csdn.net/lieyanfeiniao_?spm=1000.2115.3001.10640" target="_blank"
                    class="social-link">CSDN</a>
@@ -118,10 +132,11 @@
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted, nextTick} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from '../Header.vue'
+import Header from './Header.vue'
 import MarkdownViewer from '@/components/MarkdownViewer.vue'
-import { getArticleById } from '@/data/articles.ts'
-import type { Article } from '@/types/article.ts'
+import { getArticleById, getAllArticles } from '@/data/articles'
+import type { Article } from '@/types/article'
+import PDFViewer from "@/components/PDFViewer.vue";
 
 const route = useRoute()
 const router = useRouter()
@@ -133,6 +148,7 @@ const activeHeadingId = ref<string>('')
 // 控制目录固定
 const isTocFixed = ref(false)
 const tocOffsetTop = ref(0)
+const total = ref(0)
 
 // 计算目录的初始位置
 const calculateTocPosition = () => {
@@ -169,6 +185,14 @@ const handleScroll = () => {
   const fixedThreshold = tocOffsetTop.value - headerHeight - 20
 
   isTocFixed.value = scrollY > fixedThreshold
+}
+
+// 获取文件路径
+const getFilePath = (article: Article) => {
+  if (article.fileType === 'pdf') {
+    return `/articles/${article.fileName}.pdf`
+  }
+  return `/articles/${article.fileName}.md`
 }
 
 
@@ -255,6 +279,7 @@ const shareArticle = () => {
 // 组件挂载时加载文章
 onMounted(() => {
   loadArticle()
+  total.value = getAllArticles().total
   window.addEventListener('scroll', handleScroll)
 
   // 在下一个tick计算位置，确保DOM已渲染
@@ -322,7 +347,7 @@ onUnmounted(() => {
 
 .article-title {
   font-size: 2.2rem;
-  color: #7a5c95;
+  color: #bb95dd;
   margin-bottom: 1.5rem;
   line-height: 1.3;
   font-weight: 600;
@@ -612,4 +637,9 @@ onUnmounted(() => {
 .toc-container::-webkit-scrollbar-thumb:hover {
   background: #7E6B8F;
 }
+
+
+
+
+
 </style>
