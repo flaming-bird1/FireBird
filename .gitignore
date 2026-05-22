@@ -33,4 +33,4 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-!deploy-github.bat
+deploy-github.bat
