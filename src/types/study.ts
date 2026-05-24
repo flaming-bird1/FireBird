@@ -11,10 +11,11 @@ export interface DailyRecord {
     studyHours?: number    // 学习时长
 }
 
-// 每周总结
+// 每周总结（带可选的下周安排）
 export interface WeeklySummary {
     id: string
     weekStart: string      // 周开始日期
     weekEnd: string        // 周结束日期
     summary: string[]      // 本周总结（分点）
+    nextWeekTasks?: string[] // 下周安排（分点，可选）
 }

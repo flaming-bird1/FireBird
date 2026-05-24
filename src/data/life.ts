@@ -83,6 +83,14 @@ export const getLifeMoments = (): LifeMoment[] => {
                 'images/life/2026/5月20日/01.jpg',
             ],
             createTime: '2026-05-20',
+        },
+        {
+            id: '13',
+            content:'今天参加汇川杯大赛，西南赛区的现场答辩。',
+            images: [
+                'images/life/2026/5月23日/01.jpg',
+            ],
+            createTime: '2026-05-23',
         }
 
     ]

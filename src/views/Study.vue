@@ -48,7 +48,7 @@
                     <input
                         type="text"
                         v-model="searchKeyword"
-                        placeholder="搜索日期（如 04-01）或内容..."
+                        placeholder="搜索日期（如 2026-04-01 或 04-01）或内容..."
                         class="search-input"
                     />
                     <button v-if="searchKeyword" class="search-clear" @click="clearSearch">×</button>
@@ -66,6 +66,7 @@
                   >
                     <span class="date-num">{{ formatDay(record.date) }}</span>
                     <span class="date-day">{{ formatMonth(record.date) }}</span>
+                    <span class="date-year">{{ formatYear(record.date) }}</span>
                   </button>
                   <div v-if="searchKeyword && filteredDailyRecords.length === 0" class="no-result">
                     未找到相关记录
@@ -77,7 +78,7 @@
                   <div class="card-header">
                     <div class="date-info">
                       <h2>{{ currentRecord.weekday }}</h2>
-                      <p>{{ formatFullDate(currentRecord.date) }}</p>
+                      <p>{{ formatFullDateTime(currentRecord.date) }}</p>
                     </div>
                     <div class="hours-badge" v-if="currentRecord.studyHours">
                       📚 学习 {{ currentRecord.studyHours }} 小时
@@ -129,10 +130,6 @@
                   </div>
                 </div>
 
-
-
-
-
                 <!-- 无数据提示 -->
                 <div v-if="!currentRecord && filteredDailyRecords.length === 0 && !searchKeyword" class="empty-tip">
                   暂无每日记录
@@ -148,7 +145,7 @@
                     <input
                         type="text"
                         v-model="weeklySearchKeyword"
-                        placeholder="搜索周总结内容..."
+                        placeholder="搜索日期（如 2026-05-18 或 05-18）或周总结内容..."
                         class="search-input"
                     />
                     <button v-if="weeklySearchKeyword" class="search-clear" @click="clearWeeklySearch">×</button>
@@ -163,15 +160,37 @@
                   >
                     <div class="week-header">
                       <span class="week-range">
-                        {{ formatShortDate(week.weekStart) }} - {{ formatShortDate(week.weekEnd) }}
+                        {{ formatFullDateTime(week.weekStart) }} - {{ formatFullDateTime(week.weekEnd) }}
                       </span>
                     </div>
-                    <ul class="point-list">
-                      <li v-for="(item, idx) in week.summary" :key="idx">
-                        <span class="bullet-point"></span>
-                        {{ item }}
-                      </li>
-                    </ul>
+
+                    <!-- 本周总结 -->
+                    <div class="week-section">
+                      <h4 class="week-section-title">
+                        <span class="section-icon">📋</span>
+                        本周总结
+                      </h4>
+                      <ul class="point-list">
+                        <li v-for="(item, idx) in week.summary" :key="idx">
+                          <span class="bullet-point"></span>
+                          {{ item }}
+                        </li>
+                      </ul>
+                    </div>
+
+                    <!-- 下周安排 -->
+                    <div class="week-section" v-if="week.nextWeekTasks && week.nextWeekTasks.length > 0">
+                      <h4 class="week-section-title next-week-title">
+                        <span class="section-icon">📌</span>
+                        下周安排
+                      </h4>
+                      <ul class="point-list next-week-list">
+                        <li v-for="(item, idx) in week.nextWeekTasks" :key="idx">
+                          <span class="bullet-point next-week-bullet"></span>
+                          {{ item }}
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                   <div v-if="weeklySearchKeyword && filteredWeeklySummaries.length === 0" class="no-result">
                     未找到相关周总结
@@ -276,15 +295,16 @@ const filteredDailyRecords = computed(() => {
   if (searchKeyword.value.trim()) {
     const keyword = searchKeyword.value.toLowerCase().trim()
     return dailyRecords.value.filter(record => {
-      // 搜索日期（支持 04-01 或 4月1日 格式）
-      const dateStr = formatFullDate(record.date).toLowerCase()
+      // 搜索日期（支持 2026-04-01、04-01、4月1日、2026年4月1日 等格式）
+      const fullDateStr = formatFullDateTime(record.date).toLowerCase()
       const shortDate = record.date.slice(5).toLowerCase() // MM-DD
+      const year = record.date.slice(0, 4) // YYYY
       // 搜索今日总结内容
       const summaryMatch = record.summary.some(item => item.toLowerCase().includes(keyword))
       // 搜索明日安排内容
       const tasksMatch = record.tomorrowTasks.some(item => item.toLowerCase().includes(keyword))
 
-      return dateStr.includes(keyword) || shortDate.includes(keyword) || summaryMatch || tasksMatch
+      return fullDateStr.includes(keyword) || shortDate.includes(keyword) || year.includes(keyword) || summaryMatch || tasksMatch
     })
   }
 
@@ -292,15 +312,53 @@ const filteredDailyRecords = computed(() => {
   return dailyRecords.value.slice(-7)
 })
 
-// 过滤后的每周总结
+// 过滤后的每周总结（支持日期搜索，并按时间倒序排列）
 const filteredWeeklySummaries = computed(() => {
-  if (!weeklySearchKeyword.value.trim()) {
-    return weeklySummaries.value
-  }
-  const keyword = weeklySearchKeyword.value.toLowerCase().trim()
-  return weeklySummaries.value.filter(week => {
-    return week.summary.some(item => item.toLowerCase().includes(keyword))
+  // 先排序（按周结束日期倒序，最近的在前）
+  const sortedSummaries = [...weeklySummaries.value].sort((a, b) => {
+    return new Date(b.weekEnd).getTime() - new Date(a.weekEnd).getTime()
   })
+
+  if (!weeklySearchKeyword.value.trim()) {
+    return sortedSummaries
+  }
+
+  const keyword = weeklySearchKeyword.value.toLowerCase().trim()
+
+  const filtered = sortedSummaries.filter(week => {
+    // 搜索周范围日期（支持多种格式）
+    const startFull = formatFullDateTime(week.weekStart).toLowerCase()
+    const startShort = week.weekStart.slice(5).toLowerCase() // MM-DD
+    const startYear = week.weekStart.slice(0, 4) // YYYY
+
+    const endFull = formatFullDateTime(week.weekEnd).toLowerCase()
+    const endShort = week.weekEnd.slice(5).toLowerCase()
+    const endYear = week.weekEnd.slice(0, 4)
+
+    // 组合成周范围字符串
+    const rangeFull = `${startFull} - ${endFull}`
+    const rangeShort = `${formatShortDate(week.weekStart)} - ${formatShortDate(week.weekEnd)}`
+
+    // 检查是否匹配日期
+    const dateMatch =
+        rangeFull.includes(keyword) ||
+        rangeShort.includes(keyword) ||
+        startFull.includes(keyword) ||
+        startShort.includes(keyword) ||
+        startYear.includes(keyword) ||
+        endFull.includes(keyword) ||
+        endShort.includes(keyword) ||
+        endYear.includes(keyword)
+
+    // 搜索本周总结内容
+    const summaryMatch = week.summary.some(item => item.toLowerCase().includes(keyword))
+    // 搜索下周安排内容
+    const tasksMatch = week.nextWeekTasks?.some(item => item.toLowerCase().includes(keyword)) || false
+
+    return dateMatch || summaryMatch || tasksMatch
+  })
+
+  return filtered
 })
 
 // 当前选中的记录
@@ -362,6 +420,9 @@ const examDaysLeft = computed(() => {
 })
 
 // 工具函数
+const formatYear = (date: string) => {
+  return new Date(date).getFullYear().toString()
+}
 const formatDay = (date: string) => new Date(date).getDate().toString()
 const formatMonth = (date: string) => {
   const d = new Date(date)
@@ -370,6 +431,11 @@ const formatMonth = (date: string) => {
 const formatFullDate = (date: string) => {
   const d = new Date(date)
   return `${d.getMonth() + 1}月${d.getDate()}日`
+}
+// 完整日期时间格式（带年份）
+const formatFullDateTime = (date: string) => {
+  const d = new Date(date)
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 }
 const formatShortDate = (date: string) => {
   const d = new Date(date)
@@ -660,13 +726,19 @@ const getParagraphs = (text: string) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 55px;
+  min-width: 70px;
   padding: 0.5rem 0.6rem;
   background: #f5f0f8;
   border: 2px solid transparent;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s;
+
+  .date-year {
+    font-size: 0.6rem;
+    color: #aaa;
+    margin-top: 2px;
+  }
 
   .date-day {
     font-size: 0.7rem;
@@ -687,7 +759,7 @@ const getParagraphs = (text: string) => {
   &.active {
     background: #7e6b8f;
 
-    .date-day, .date-num {
+    .date-year, .date-day, .date-num {
       color: white;
     }
   }
@@ -758,6 +830,50 @@ const getParagraphs = (text: string) => {
     border-radius: 15px;
     font-size: 0.8rem;
     color: #7e6b8f;
+    display: inline-block;
+  }
+}
+
+/* 每周总结中的分区样式 */
+.week-section {
+  margin-top: 1rem;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.week-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  color: #7e6b8f;
+  margin-bottom: 0.6rem;
+  font-family: "STKaiti", "KaiTi", serif;
+  font-weight: 500;
+
+  .section-icon {
+    font-size: 1rem;
+  }
+}
+
+.next-week-title {
+  color: #e67e22;
+  border-left: 3px solid #e67e22;
+  padding-left: 10px;
+  margin-top: 0.8rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(230, 126, 34, 0.2);
+}
+
+.next-week-list {
+  li {
+    border-bottom-color: rgba(230, 126, 34, 0.1);
+
+    .next-week-bullet {
+      background: #e67e22;
+    }
   }
 }
 
@@ -1058,10 +1174,14 @@ const getParagraphs = (text: string) => {
   }
 
   .date-tab {
-    min-width: 45px;
+    min-width: 55px;
 
     .date-num {
       font-size: 1rem;
+    }
+
+    .date-year {
+      font-size: 0.5rem;
     }
   }
 
