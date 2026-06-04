@@ -2,7 +2,7 @@
 import type {LifeMoment, LifeAlbum, FriendSuggestion} from '@/types/life'
 
 export const getLifeMoments = (): LifeMoment[] => {
-    // 资源统一放到src/assets里面，通过@访问
+    // 资源统一放到public里面
     return [
         {
             id: '1',
@@ -91,7 +91,19 @@ export const getLifeMoments = (): LifeMoment[] => {
                 'images/life/2026/5月23日/01.jpg',
             ],
             createTime: '2026-05-23',
-        }
+        },
+        {
+            id: '14',
+            content:'今天做了一天的工程实践4，已经力竭了。\n' +
+                '最近事情有点多，我又想参加软件杯，因为去年只报名了，但是最终没有做出东西来，又想参加气象科技创新大赛（明天晚上就得报名，然后改写材料），等几天还有一个海峡杯的省赛答辩，以及中国高校计算机大赛——网络技术挑战赛的复赛（还得改材料）。刘斌老师还打算让我完善实验，发一篇论文。\n' +
+                '最近还有工程实践4，7号数字图像处理又要截至了，12号还有一个多元统计分析的期末考试。\n' +
+                '最近事情可真多。',
+            images: [
+                'images/life/2026/6月2日/01.png',
+                'images/life/2026/6月2日/02.png',
+            ],
+            createTime: '2026-06-02',
+        },
 
     ]
 }

@@ -65,6 +65,7 @@ export const getResumeHonors = (): ResumeHonor[] => {
         {id: '19', name: '第八届传智杯全国大学生IT技能大赛-AI大模型创新应用挑战赛-初赛一等奖', level: '校赛', grade: '大三'},
         {id: '20', name: '第十六届全国大学生电子商务"创新、创意及创业"挑战赛-校赛一等奖', level: '校赛', grade: '大三'},
         {id: '21', name: '软件著作权-空间经济分析平台', level: '证书', grade: '大三'},
+        {id: '22', name: '第十九届全国大学生节能减排社会实践与科技竞赛-校赛三等奖', level: '校赛', grade: '大三'},
     ]
 }
 
