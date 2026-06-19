@@ -5,7 +5,8 @@
     <!--    页面横幅（包含基本信息卡片）-->
     <div class="banner">
       <div class="banner-content">
-        <h1>个人简历</h1>
+        <h1>成长足迹</h1>
+        <!--        <h1>个人简历</h1>-->
         <p class="typing-text">全栈开发者 · 热爱技术 · 追求卓越</p>
       </div>
       <!-- 基本信息卡片放在横幅底部 -->
@@ -235,17 +236,43 @@
                     </div>
 
                     <div class="honors-content">
-                      <div class="honors-grid">
-                        <div class="honor-card" v-for="honor in filteredHonors" :key="honor.id">
-                          <div class="honor-level" :class="getHonorLevelClass(honor.level)">
-                            {{ honor.level || '荣誉' }}
+                      <!-- 全部：按年级分组展示 -->
+                      <div v-if="activeHonorCategory === 'all'">
+                        <div v-for="grade in gradeOrder" :key="grade" class="honor-grade-group">
+                          <div class="honor-grade-title" v-if="groupedByGrade[grade] && groupedByGrade[grade].length">
+                            <span class="grade-icon" :class="getGradeIconClass(grade)"></span>
+                            {{ grade }}
+                            <span class="grade-count">{{ groupedByGrade[grade].length }}</span>
                           </div>
-                          <div class="honor-name">{{ honor.name }}</div>
-                          <div class="honor-year" v-if="honor.year">{{ honor.year }}</div>
+                          <div class="honors-grid" v-if="groupedByGrade[grade] && groupedByGrade[grade].length">
+                            <div class="honor-card" v-for="honor in groupedByGrade[grade]" :key="honor.id">
+                              <div class="honor-level" :class="getHonorLevelClass(honor.level)">
+                                {{ honor.level || '荣誉' }}
+                              </div>
+                              <div class="honor-name">{{ honor.name }}</div>
+                              <div class="honor-year" v-if="honor.year">{{ honor.year }}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div v-if="allHonors.length === 0" class="no-honors">
+                          暂无荣誉奖项
                         </div>
                       </div>
-                      <div v-if="filteredHonors.length === 0" class="no-honors">
-                        暂无该分类奖项
+
+                      <!-- 其他分类：原有展示方式 -->
+                      <div v-else>
+                        <div class="honors-grid">
+                          <div class="honor-card" v-for="honor in filteredHonors" :key="honor.id">
+                            <div class="honor-level" :class="getHonorLevelClass(honor.level)">
+                              {{ honor.level || '荣誉' }}
+                            </div>
+                            <div class="honor-name">{{ honor.name }}</div>
+                            <div class="honor-year" v-if="honor.year">{{ honor.year }}</div>
+                          </div>
+                        </div>
+                        <div v-if="filteredHonors.length === 0" class="no-honors">
+                          暂无该分类奖项
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -338,9 +365,9 @@ const activeTab = ref('education')
 const activeHonorCategory = ref('all')
 
 const allHonors = computed(() => resumeHonors.value)
-const nationalHonors = computed(() => resumeHonors.value.filter(h => h.level === '国家级'))
-const provincialHonors = computed(() => resumeHonors.value.filter(h => h.level === '省级'))
-const schoolHonors = computed(() => resumeHonors.value.filter(h => h.level === '校级'))
+const nationalHonors = computed(() => resumeHonors.value.filter(h => h.level === '国赛'))
+const provincialHonors = computed(() => resumeHonors.value.filter(h => h.level === '省赛'))
+const schoolHonors = computed(() => resumeHonors.value.filter(h => h.level === '校赛'))
 const certHonors = computed(() => resumeHonors.value.filter(h => h.level === '证书'))
 
 const filteredHonors = computed(() => {
@@ -358,6 +385,30 @@ const filteredHonors = computed(() => {
   }
 })
 
+// 年级顺序
+const gradeOrder = ['大一', '大二', '大三']
+
+// 按年级分组
+const groupedByGrade = computed(() => {
+  const grouped: Record<string, ResumeHonor[]> = {
+    '大一': [],
+    '大二': [],
+    '大三': []
+  }
+
+  allHonors.value.forEach(honor => {
+    if (honor.grade && grouped[honor.grade]) {
+      grouped[honor.grade].push(honor)
+    } else if (honor.grade) {
+      // 处理其他年级（如果有）
+      grouped[honor.grade] = grouped[honor.grade] || []
+      grouped[honor.grade].push(honor)
+    }
+  })
+
+  return grouped
+})
+
 const getHonorLevelClass = (level?: string) => {
   if (!level) return 'honor-default'
   const levelMap: Record<string, string> = {
@@ -367,6 +418,15 @@ const getHonorLevelClass = (level?: string) => {
     '证书': 'honor-cert'
   }
   return levelMap[level] || 'honor-default'
+}
+
+const getGradeIconClass = (grade: string) => {
+  const iconMap: Record<string, string> = {
+    '大一': '🍃',
+    '大二': '🌿',
+    '大三': '🍂'
+  }
+  return iconMap[grade] || '📌'
 }
 </script>
 
@@ -860,6 +920,7 @@ const getHonorLevelClass = (level?: string) => {
   margin: 0;
   font-weight: 600;
 }
+
 .edu-badges {
   display: flex;
   align-items: center;
@@ -1156,6 +1217,42 @@ const getHonorLevelClass = (level?: string) => {
 .honors-content {
   flex: 1;
   min-width: 0;
+}
+
+/* 年级分组标题样式 */
+.honor-grade-group {
+  margin-bottom: 1.5rem;
+}
+
+.honor-grade-group:last-child {
+  margin-bottom: 0;
+}
+
+.honor-grade-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #7e6b8f;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid rgba(126, 107, 143, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "STKaiti", "KaiTi", serif;
+}
+
+.grade-icon {
+  font-size: 1rem;
+}
+
+.grade-count {
+  background: rgba(126, 107, 143, 0.15);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #7e6b8f;
+  margin-left: 0.5rem;
 }
 
 .honors-grid {

@@ -39,7 +39,13 @@ const router = createRouter({
         {
             path: '/about',
             name: 'About',
-            component: () => import('@/views/Resume.vue')
+            component: () => import('@/views/About.vue')
+        },
+        // 简历
+        {
+            path: '/resume',
+            name: 'Resume',
+            component: () => import('@/views/ResumePage.vue')
         }
         // {
         //     path: '/life',

@@ -23,6 +23,9 @@
         <router-link to="/study" class="nav-item" active-class="active">
           考研痕迹
         </router-link>
+        <router-link to="/resume" class="nav-item" active-class="active">
+          简历
+        </router-link>
         <router-link to="/about" class="nav-item" active-class="active">
           关于笔者
         </router-link>

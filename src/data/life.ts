@@ -104,7 +104,26 @@ export const getLifeMoments = (): LifeMoment[] => {
             ],
             createTime: '2026-06-02',
         },
-
+        {
+            id: '15',
+            content:'我只能感叹AI太强了，用Qorder CN 辅助开发代码，今天只花了六个小时，就把软件杯的作品做出来了，后续只用再微调就可以去参加比赛了，AI真的太强了！',
+            images: [
+                'images/life/2026/6月5日/01.png',
+                'images/life/2026/6月5日/02.png',
+                'images/life/2026/6月5日/03.png',
+                'images/life/2026/6月5日/04.png',
+            ],
+            createTime: '2026-06-05',
+        },
+        {
+            id: '16',
+            content:'今天参加2026海峡两岸暨港澳地区大学生计算机创新作品赛的省赛答辩了。遇到了一个很有趣的朋友。',
+            images:[
+                'images/life/2026/6月6日/01.jpg',
+                'images/life/2026/6月6日/02.jpg',
+            ],
+            createTime: '2026-06-06',
+        }
     ]
 }
 // 相册数据

@@ -30,9 +30,11 @@ export const getResumeEducation = (): ResumeEducation => {
 // 获取技能标签（分组格式）
 export const getResumeSkills = () => {
     return {
-        frontend: ['Vue', 'JavaScript', 'TypeScript', 'HTML', 'CSS', 'ECharts'],
-        backend: ['Java', 'Spring Boot', 'Python', 'MySQL', 'MyBatis-Plus'],
-        other: ['Linux', 'Git', 'RESTful API', '全栈开发']
+        frontend: ['Vue 3', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Element Plus', 'uni-app', 'ECharts', 'Three.js', 'Leaflet', 'Mermaid'],
+        backend: ['Java 21', 'Spring Boot 4.0', 'Python', 'Flask', 'MySQL', 'MyBatis', 'JWT', 'RESTful API'],
+        ai_ml: ['XGBoost', 'LSTM', 'CNN-LSTM', 'PyTorch', 'scikit-learn', 'RAG', 'Multi-Agent System', 'PCA', 'K-means'],
+        devops_tools: ['Git', 'Linux', 'Vite', 'Maven', 'Docker', 'Nginx', 'VSCode'],
+        data_visualization: ['ECharts', 'Leaflet', '天地图GIS', 'Three.js', 'GeoPandas', 'PySAL']
     }
 }
 
@@ -59,13 +61,14 @@ export const getResumeHonors = (): ResumeHonor[] => {
         // 大三
         {id: '14', name: '第十九届中国成都软件设计与应用大赛总决赛-优胜奖', level: '国赛', grade: '大三'},
         {id: '15', name: '第十九届全国大学生软件创新大赛-国赛三等奖', level: '国赛', grade: '大三'},
-        {id: '16', name: '第八届传智杯全国大学生IT技能大赛-AI WEB网页开发挑战赛-省赛二等奖', level: '省赛', grade: '大三'},
+        {id: '16', name: '第八届传智杯全国大学生IT技能大赛-AI WEB网页开发挑战赛-国赛二等奖', level: '国赛', grade: '大三'},
         {id: '17', name: '第19届中国大学生计算机设计大赛-省赛三等奖', level: '省赛', grade: '大三'},
         {id: '18', name: '第八届码蹄杯程序设计大赛-校赛铜奖', level: '校赛', grade: '大三'},
         {id: '19', name: '第八届传智杯全国大学生IT技能大赛-AI大模型创新应用挑战赛-初赛一等奖', level: '校赛', grade: '大三'},
         {id: '20', name: '第十六届全国大学生电子商务"创新、创意及创业"挑战赛-校赛一等奖', level: '校赛', grade: '大三'},
         {id: '21', name: '软件著作权-空间经济分析平台', level: '证书', grade: '大三'},
         {id: '22', name: '第十九届全国大学生节能减排社会实践与科技竞赛-校赛三等奖', level: '校赛', grade: '大三'},
+        {id: '23', name: '2026年海峡两岸暨港澳地区大学生计算机创新作品赛四川省赛-省赛三等奖', level: '省赛', grade: '大三'},
     ]
 }
 
@@ -82,13 +85,22 @@ export const getResumeProjects = (): ResumeProject[] => {
             giteeUrl: ''
         },
         {
-            id: '2',
-            name: '环境水质监测与评价系统',
-            description: '基于 Spring Boot 4.0 + JPA 开发的环境水质数据管理平台，支持地表水、地下水多类型监测数据的Excel批量导入、水质自动评价、多维查询与导出功能，实现县-市-省三级审核流程。',
-            detail: '采用分层架构设计（Controller-Service-Repository），封装SurfaceWaterQualityEvaluator/GroundWaterQualityEvaluator两大核心评价引擎，严格遵循GB3838-2002和GB/T 14848-2017国家标准，实现单因子评价法（从优不从劣原则）。集成Apache POI实现智能Excel导入，支持动态列映射、数据指纹去重、氨氮+硝酸盐氮≤总氮等业务校验规则，导入成功率达95%以上。设计MonitorPoint点位管理系统，支持河流/湖库/地下水三种水体类型，包含经纬度、服务人口等30+字段。实现复杂分页查询（JPA Specification动态条件+地理位置筛选），支持省份/城市/区县/乡镇/村五级地域过滤，年份季度组合查询。开发Excel导出功能，通过反射机制动态读取VO对象属性，支持100+监测指标格式化输出（BigDecimal精度处理、日期拆分年月日列）。构建县-市-省三级审核工作流，记录审核人、审核时间、审核意见全链路追踪。使用Lombok简化实体类代码，Result统一响应封装，GlobalExceptionHandler全局异常处理（文件大小限制、系统异常捕获）。配置MySQL连接池、JPA自动建表、邮件发送服务，支持JWT认证预留接口。',
-            tags: ['Spring Boot 4.0', 'Java 21', 'JPA/Hibernate', 'MySQL', 'Apache POI 5.2.3', 'Lombok', 'JWT'],
-            projectUrl: '',
-            giteeUrl: ''
+            "id": "2",
+            "name": "长江流域（四川省段）水质分类与智能评价系统",
+            "description": "面向地表水环境监测的智能评价平台，集成 XGBoost 多变量水质预测、多元统计分析、AI 智能体解读三大核心算法体系，实现从数据采集到智能决策的全链路闭环。",
+            "detail": "系统采用**前后端分离六层架构**：前端展示层（Vue 3 + TypeScript）、业务服务层（Flask 3.0 Blueprint 9 模块）、算法引擎层（XGBoost + scikit-learn）、AI 智能体层（Chat/Prediction/Statistics 三 Agent）、数据层（MySQL + PyMySQL）、外部服务层（vivo AI 大模型 + 天地图）。\n\n**XGBoost 统一多变量水质预测模型**：将所有断面历史数据合并训练单一模型，构造 27 维特征向量（3 维时间特征 DOY/Month/Quarter + 16 维滞后特征 lag1/lag2 + 8 维滑动平均特征），同步预测水温/pH/溶解氧/高锰酸盐指数/氨氮/总磷/总氮/叶绿素 a 共 8 项指标，采用逐日递推策略实现 1-30 天滚动预测，引入脏标记机制实现数据导入后自动增量重训练，模型序列化至 Pickle 文件支持进程重启恢复。\n\n**4 种多元统计分析**：PCA 主成分分析（协方差矩阵特征值分解 + 累计方差≥85% 自动定维）、K-means 聚类（肘部法则自动寻优 K + PCA 2D 可视化）、Pearson 相关性分析（p<0.05 显著性筛选 + 热力图矩阵）、因子分析（载荷阈值≥0.4 的规则式污染源类型推断：生活源/农业源/自然因素）。\n\n**AI 智能体三层架构**：BaseAgent 基类封装 vivo AI 大模型 HTTP API 通信，派生出 ChatAgent（多轮领域对话）、PredictionAgent（预测四维解读：趋势分析→重点指标→原因推断→建议措施）、StatisticsAgent（PCA/相关性/聚类/因子四种差异化 Prompt 模板）三个专业化智能体。\n\n**水质自动评价**：基于 GB3838-2002 标准实现 21 项指标单因子评价法（一票否决制）与湖库 TLI 综合营养状态指数计算（chla/TP/TN/SD/CODₘₙ 五参数加权）。\n\n前端深度集成 Leaflet 天地图引擎实现监测点位 GeoJSON 图层渲染（六色编码），ECharts 6 实现多图表联动可视化，集成 Three.js 3D 数字人与 WebSocket TTS 语音合成。",
+            "tags": ["XGBoost", "PCA", "K-means", "Factor Analysis", "AI Agent", "Flask", "Vue 3", "Leaflet", "ECharts"],
+            "projectUrl": "",
+            "giteeUrl": ""
+        },
+        {
+            "id": "1",
+            "name": "数据结构智能助教系统",
+            "description": "面向数据结构课程的 AI 智能辅导平台，采用多智能体协同架构（Multi-Agent System），集成 6 个专业智能体与 RAG 检索增强生成技术，实现从学生画像构建、个性化学习路径规划、智能答疑辅导、习题生成批改到算法可视化的全链路个性化学习闭环。",
+            "detail": "系统采用**前后端分离六层架构**：用户访问层、前端展示层（Vue 3 + TypeScript + Element Plus）、API 网关层（Flask 3.0 Blueprint 6 模块）、多智能体协同层（Orchestrator + 6 Agent）、服务层（LLM Client + ChromaDB + TTS）、数据持久层（MySQL + ChromaDB）。\n\n**多智能体协同架构（MAS）**：设计 6 个专业化智能体 + Orchestrator 协调器，统一通过 BaseAgent 基类封装 vivo 蓝心大模型 API。ProfileAgent 对话式问卷构建 6 维度画像，RetrievalAgent 基于 ChromaDB + m3e-base 实现 RAG 检索增强，TutorAgent 结合画像与检索结果个性化答疑并自动生成 Mermaid 图解，ExerciseAgent 自动出题（选择题/判断题/填空题）并批改，AlgorithmVizAgent 协同生成算法动画（Mermaid 流程图 + 步骤动画 + 可运行代码 + 复杂度），CodeAnalysisAgent 支持文本/文件上传 5 维度代码讲解。引入算法精确降级方案，LLM 失败时自动切换预置模拟步骤。\n\n**Orchestrator 三层协同流程**：画像更新 → 知识检索 → 专业执行，每次对话自动更新画像。\n\n**RAG 知识库**：PyMuPDF 解析教材 → OCR 识别 → LangChain 切块 → m3e-base 向量化 → ChromaDB 存储。\n\n**3D 交互创新**：Three.js + GSAP 构建 3D 岛屿式学习地图（GeoJSON 地块 + 贝塞尔曲线连线 + 四态颜色反馈），Unity WebGL 构建 3D 数字人助教「小慧」（唇形同步 + 肢体动画 + 语音交互）。\n\n集成 ECharts 6 统计可视化、Mermaid 11 流程图渲染（内置中文括号/HTML 标签清洗器）、vivo TTS WebSocket 语音合成（31 种音色）。",
+            "tags": ["Multi-Agent System", "RAG", "Flask", "Vue 3", "ChromaDB", "蓝心大模型", "Three.js", "Mermaid", "TTS"],
+            "projectUrl": "",
+            "giteeUrl": ""
         },
         {
             id: '3',
@@ -127,13 +139,13 @@ export const getResumeProjects = (): ResumeProject[] => {
             giteeUrl: "https://gitee.com/flaming-bird/gdp-analysis-and-forecast-ep3-frontend.git"
         },
         {
-            "id": "7",
-            "name": "供热管网爆管智能定位与应急关阀优化系统",
-            "description": "基于 Vue 3 Composition API + TypeScript 开发的智慧供热管网可视化监测平台，集成天地图 GIS 引擎、ECharts 数据可视化、设备信息管理三大模块，实现爆管定位结果展示、关阀方案可视化、节能减排效益分析等功能。",
-            "detail": "采用组件化架构设计，封装 AppHeader/AIChat 等可复用组件和 useUserStore 组合式函数，实现状态管理与视图层分离；深度集成 Leaflet 天地图引擎，构建供热管网拓扑可视化系统，支持点/线/面图层叠加渲染（管网节点、管道、换热站），实现爆管点精准标注（❗图标）、受影响区域动态闪烁动画（setInterval + setStyle）、压力波传播圆环扩散效果（CSS animation）。开发 ECharts 6.0 数据可视化模块，实现月度节能趋势对比（双折线图+面积渐变）、关阀优化效果分析（柱状图+数值标签）、碳减排等效展示（多系列柱状图）、节能效益构成饼图等 8+ 图表类型，支持点击钻取详情弹窗。集成 XLSX 库实现设备信息导入导出功能，支持传感器/阀门/换热站/管线四类数据的 Excel 解析、表格渲染与文件下载，提供网格/列表双视图切换。基于 Element Plus 2.13 构建响应式 UI 组件库，开发统计卡片、标签导航、操作下拉菜单等 20+ 业务组件，完全适配 380px-1920px 多分辨率（7 个断点媒体查询）。实现复杂交互逻辑：图层联动高亮（pipeLayer/pointLayer/surLayer）、半径圆绘制（L.circle + 坐标缓存索引）、动态目录激活、平滑滚动定位；独创绿色系视觉系统（#10b981 主色调、毛玻璃卡片 backdrop-filter: blur(12px)、粒子背景 radial-gradient 动画、渐变按钮 hover 动效），提升用户体验。配置 Vite 6.0 路由懒加载 + esbuild 压缩，首屏加载减少 35%，打包速度提升 45%；设计完整 TypeScript 类型系统（Sensor/Valve/Station/Pipe/LoginResponse 等接口），覆盖率 95%+，零运行时错误。对接 Django/SpringBoot 双后端 API，实现登录认证（token 管理）、爆管计算、关阀方案、定位结果等数据交互，提供完善的模拟数据降级策略确保演示可用性。",
-            "tags": ["Vue 3.5", "TypeScript 5.7", "Vite 6.0", "Element Plus 2.13", "Pinia 2.3", "Leaflet 1.9", "ECharts 6.0", "Axios", "XLSX"],
-            "projectUrl": "http://8.156.67.132:6001/",
-            "giteeUrl": ""
+            id: "7",
+            name: "供热管网爆管智能定位与应急关阀优化系统",
+            description: "基于 Vue 3 Composition API + TypeScript 开发的智慧供热管网可视化监测平台，集成天地图 GIS 引擎、ECharts 数据可视化、设备信息管理三大模块，实现爆管定位结果展示、关阀方案可视化、节能减排效益分析等功能。",
+            detail: "采用组件化架构设计，封装 AppHeader/AIChat 等可复用组件和 useUserStore 组合式函数，实现状态管理与视图层分离；深度集成 Leaflet 天地图引擎，构建供热管网拓扑可视化系统，支持点/线/面图层叠加渲染（管网节点、管道、换热站），实现爆管点精准标注（❗图标）、受影响区域动态闪烁动画（setInterval + setStyle）、压力波传播圆环扩散效果（CSS animation）。开发 ECharts 6.0 数据可视化模块，实现月度节能趋势对比（双折线图+面积渐变）、关阀优化效果分析（柱状图+数值标签）、碳减排等效展示（多系列柱状图）、节能效益构成饼图等 8+ 图表类型，支持点击钻取详情弹窗。集成 XLSX 库实现设备信息导入导出功能，支持传感器/阀门/换热站/管线四类数据的 Excel 解析、表格渲染与文件下载，提供网格/列表双视图切换。基于 Element Plus 2.13 构建响应式 UI 组件库，开发统计卡片、标签导航、操作下拉菜单等 20+ 业务组件，完全适配 380px-1920px 多分辨率（7 个断点媒体查询）。实现复杂交互逻辑：图层联动高亮（pipeLayer/pointLayer/surLayer）、半径圆绘制（L.circle + 坐标缓存索引）、动态目录激活、平滑滚动定位；独创绿色系视觉系统（#10b981 主色调、毛玻璃卡片 backdrop-filter: blur(12px)、粒子背景 radial-gradient 动画、渐变按钮 hover 动效），提升用户体验。配置 Vite 6.0 路由懒加载 + esbuild 压缩，首屏加载减少 35%，打包速度提升 45%；设计完整 TypeScript 类型系统（Sensor/Valve/Station/Pipe/LoginResponse 等接口），覆盖率 95%+，零运行时错误。对接 Django/SpringBoot 双后端 API，实现登录认证（token 管理）、爆管计算、关阀方案、定位结果等数据交互，提供完善的模拟数据降级策略确保演示可用性。",
+            tags: ["Vue 3.5", "TypeScript 5.7", "Vite 6.0", "Element Plus 2.13", "Pinia 2.3", "Leaflet 1.9", "ECharts 6.0", "Axios", "XLSX"],
+            projectUrl: "http://8.156.67.132:6001/",
+            giteeUrl: ""
         }
 
     ]

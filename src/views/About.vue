@@ -6,7 +6,6 @@
     <div class="banner">
       <div class="banner-content">
         <h1>成长足迹</h1>
-        <!--        <h1>个人简历</h1>-->
         <p class="typing-text">全栈开发者 · 热爱技术 · 追求卓越</p>
       </div>
       <!-- 基本信息卡片放在横幅底部 -->
@@ -148,9 +147,25 @@
                       </div>
                     </div>
                     <div class="skill-category">
-                      <h4>其他技能</h4>
+                      <h4>AI/机器学习</h4>
                       <div class="skill-tags">
-                        <span class="skill-tag" v-for="skill in resumeSkills.other" :key="skill">
+                        <span class="skill-tag" v-for="skill in resumeSkills.ai_ml" :key="skill">
+                          {{ skill }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="skill-category">
+                      <h4>开发运维工具</h4>
+                      <div class="skill-tags">
+                        <span class="skill-tag" v-for="skill in resumeSkills.devops_tools" :key="skill">
+                          {{ skill }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="skill-category">
+                      <h4>数据可视化</h4>
+                      <div class="skill-tags">
+                        <span class="skill-tag" v-for="skill in resumeSkills.data_visualization" :key="skill">
                           {{ skill }}
                         </span>
                       </div>
@@ -186,9 +201,11 @@
                       <p class="project-description">
                         <span class="label">项目概述：</span>{{ project.description }}
                       </p>
-                      <p class="project-description">
-                        <span class="label">详细内容：</span>{{ project.detail }}
-                      </p>
+                      <!-- 项目详情使用 Markdown 渲染 -->
+                      <div class="project-detail">
+                        <span class="label">详细内容：</span>
+                        <div class="markdown-body" v-html="renderMarkdown(project.detail)"></div>
+                      </div>
                       <div class="project-tags">
                         <span class="project-tag" v-for="tag in project.tags" :key="tag">
                           {{ tag }}
@@ -299,7 +316,7 @@
                 </div>
                 <div class="stat-item">
                   <span class="stat-number">{{
-                      resumeSkills.frontend.length + resumeSkills.backend.length + resumeSkills.other.length
+                      Object.values(resumeSkills).reduce((sum, skills) => sum + (Array.isArray(skills) ? skills.length : 0), 0)
                     }}</span>
                   <span class="stat-label">技能</span>
                 </div>
@@ -342,7 +359,8 @@
 </template>
 
 <script setup lang="ts">
-import {ref, computed} from 'vue'
+import { ref, computed } from 'vue'
+import { marked } from 'marked'
 import Header from "@/components/Header.vue";
 import {
   getResumeBaseInfo,
@@ -351,7 +369,7 @@ import {
   getResumeHonors,
   getResumeProjects
 } from '@/data/resume'
-import type {ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor} from '@/types/resume'
+import type { ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor } from '@/types/resume'
 
 const resumeBaseInfo = getResumeBaseInfo() as ResumeBaseInfo
 const resumeEducation = getResumeEducation() as ResumeEducation
@@ -385,10 +403,18 @@ const filteredHonors = computed(() => {
   }
 })
 
+// 定义荣誉等级排序权重：国赛 > 省赛 > 校赛 > 证书
+const levelOrder: Record<string, number> = {
+  '国赛': 1,
+  '省赛': 2,
+  '校赛': 3,
+  '证书': 4
+}
+
 // 年级顺序
 const gradeOrder = ['大一', '大二', '大三']
 
-// 按年级分组
+// 按年级分组，并在每个年级内按国赛 > 省赛 > 校赛 > 证书排序
 const groupedByGrade = computed(() => {
   const grouped: Record<string, ResumeHonor[]> = {
     '大一': [],
@@ -400,10 +426,18 @@ const groupedByGrade = computed(() => {
     if (honor.grade && grouped[honor.grade]) {
       grouped[honor.grade].push(honor)
     } else if (honor.grade) {
-      // 处理其他年级（如果有）
       grouped[honor.grade] = grouped[honor.grade] || []
       grouped[honor.grade].push(honor)
     }
+  })
+
+  // 对每个年级内的奖项按等级排序
+  Object.keys(grouped).forEach(grade => {
+    grouped[grade].sort((a, b) => {
+      const orderA = levelOrder[a.level || '证书']
+      const orderB = levelOrder[b.level || '证书']
+      return orderA - orderB
+    })
   })
 
   return grouped
@@ -427,6 +461,22 @@ const getGradeIconClass = (grade: string) => {
     '大三': '🍂'
   }
   return iconMap[grade] || '📌'
+}
+
+// ====== Markdown 渲染函数 ======
+const renderMarkdown = (content: string) => {
+  if (!content) return ''
+
+  // 配置 marked 选项
+  marked.setOptions({
+    breaks: true,
+    gfm: true
+  })
+
+  // 解析 Markdown
+  const html = marked.parse(content) as string
+
+  return html
 }
 </script>
 
@@ -1137,6 +1187,96 @@ const getGradeIconClass = (grade: string) => {
     font-weight: 600;
     color: #7e6b8f;
     margin-right: 0.5rem;
+  }
+}
+
+/* ====== 项目详情 Markdown 样式 ====== */
+.project-detail {
+  margin-bottom: 1rem;
+
+  .label {
+    font-weight: 600;
+    color: #7e6b8f;
+    margin-right: 0.5rem;
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+}
+
+.markdown-body {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: #444;
+
+  p {
+    margin: 0.6rem 0;
+  }
+
+  strong {
+    color: #7e6b8f;
+    font-weight: 600;
+  }
+
+  br {
+    display: block;
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+    margin: 0.4rem 0;
+
+    li {
+      margin: 0.2rem 0;
+    }
+  }
+
+  code {
+    background: rgba(126, 107, 143, 0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-family: 'Consolas', 'Monaco', monospace;
+    color: #7e6b8f;
+  }
+
+  pre {
+    background: #f5f3f8;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 0.6rem 0;
+    border-left: 3px solid #7e6b8f;
+
+    code {
+      background: transparent;
+      padding: 0;
+      color: #2c3e50;
+      font-size: 0.85rem;
+    }
+  }
+
+  blockquote {
+    border-left: 3px solid #7e6b8f;
+    margin: 0.6rem 0;
+    padding: 0.4rem 1rem;
+    background: rgba(126, 107, 143, 0.05);
+    border-radius: 0 8px 8px 0;
+    color: #555;
+  }
+
+  hr {
+    border: none;
+    border-top: 2px dashed rgba(126, 107, 143, 0.2);
+    margin: 1rem 0;
+  }
+
+  a {
+    color: #7e6b8f;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
