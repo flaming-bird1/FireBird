@@ -132,7 +132,7 @@
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted, nextTick} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Header from './Header.vue'
+import Header from '@/components/Header.vue'
 import MarkdownViewer from '@/components/MarkdownViewer.vue'
 import { getArticleById, getAllArticles } from '@/data/articles'
 import type { Article } from '@/types/article'

@@ -34,7 +34,8 @@ export const getResumeSkills = () => {
         backend: ['Java 21', 'Spring Boot 4.0', 'Python', 'Flask', 'MySQL', 'MyBatis', 'JWT', 'RESTful API'],
         ai_ml: ['XGBoost', 'LSTM', 'CNN-LSTM', 'PyTorch', 'scikit-learn', 'RAG', 'Multi-Agent System', 'PCA', 'K-means'],
         devops_tools: ['Git', 'Linux', 'Vite', 'Maven', 'Docker', 'Nginx', 'VSCode'],
-        data_visualization: ['ECharts', 'Leaflet', '天地图GIS', 'Three.js', 'GeoPandas', 'PySAL']
+        data_visualization: ['ECharts', 'Leaflet', '天地图GIS', 'Three.js', 'GeoPandas', 'PySAL'],
+        other: ['Git', 'Markdown', 'Office', 'CET-4', 'CET-6']
     }
 }
 

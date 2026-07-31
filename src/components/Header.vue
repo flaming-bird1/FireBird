@@ -23,6 +23,9 @@
         <router-link to="/study" class="nav-item" active-class="active">
           考研痕迹
         </router-link>
+        <router-link to="/math-graph" class="nav-item" active-class="active">
+          函数绘图
+        </router-link>
         <router-link to="/resume" class="nav-item" active-class="active">
           简历
         </router-link>
@@ -76,6 +79,8 @@
   background-color: #7E6B8F;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  /* 显式声明字体，避免继承宿主页面的字体导致风格不一致 */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .container {

@@ -1,10 +1,12 @@
 <template>
   <div class="function-plotter">
+    <Header></Header>
+
     <!-- 左侧控制面板 - 使用Element Plus卡片布局 -->
     <el-scrollbar class="control-panel">
       <div class="panel-header">
         <h2 class="title">
-          <el-icon size="24" color="#409EFF"><DataLine /></el-icon>
+          <el-icon size="24" color="#7E6B8F"><DataLine /></el-icon>
           考研数学绘图仪
         </h2>
         <el-tag type="info" size="small" effect="plain">v2.0</el-tag>
@@ -138,7 +140,7 @@
                 :min="-20"
                 :max="20"
                 :step="0.1"
-                :format-tooltip="(val) => val.toFixed(1)"
+                :format-tooltip="(val: number) => val.toFixed(1)"
                 @input="updateXRange"
             />
             <div class="range-value">[{{ xMin.toFixed(2) }}, {{ xMax.toFixed(2) }}]</div>
@@ -152,7 +154,7 @@
                 :min="-20"
                 :max="20"
                 :step="0.1"
-                :format-tooltip="(val) => val.toFixed(1)"
+                :format-tooltip="(val: number) => val.toFixed(1)"
                 @input="updateYRange"
             />
             <div class="range-value">[{{ yMin.toFixed(2) }}, {{ yMax.toFixed(2) }}]</div>
@@ -179,7 +181,7 @@
                 :min="500"
                 :max="5000"
                 :step="100"
-                :format-tooltip="(val) => val + '点'"
+                :format-tooltip="(val: number) => val + '点'"
             />
             <span class="value">{{ sampleCount }}</span>
           </div>
@@ -302,9 +304,10 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
+import Header from '@/components/Header.vue';
 import {
   Plus, Delete, List, Monitor, Refresh,
   DataLine, Collection, View, Hide
@@ -312,8 +315,8 @@ import {
 
 // 预定义颜色
 const predefineColors = [
-  '#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399',
-  '#9C27B0', '#FF9800', '#4CAF50', '#2196F3', '#FF5722'
+  '#7E6B8F', '#9D8DB0', '#409EFF', '#67C23A', '#E6A23C',
+  '#F56C6C', '#909399', '#9C27B0', '#FF9800', '#4CAF50', '#2196F3', '#FF5722'
 ];
 
 // 函数项接口
@@ -327,9 +330,9 @@ const createFunctionItem = (expression = '', color = '#409EFF', lineStyle = 'sol
 
 // 函数列表
 const functions = ref([
-  createFunctionItem('sin(x)', '#409EFF', 'solid', 2, true),
-  createFunctionItem('cos(x)', '#F56C6C', 'solid', 2, true),
-  createFunctionItem('tan(x)', '#67C23A', 'dashed', 2, true)
+  createFunctionItem('sin(x)', '#7E6B8F', 'solid', 2, true),
+  createFunctionItem('cos(x)', '#E67E22', 'solid', 2, true),
+  createFunctionItem('tan(x)', '#2E8B57', 'dashed', 2, true)
 ]);
 
 const activeFunctionIndex = ref(0);
@@ -350,8 +353,8 @@ const showNumbers = ref(true);
 const activeCategory = ref('basic');
 
 // canvas 相关
-const functionCanvas = ref(null);
-let ctx = null;
+const functionCanvas = ref<HTMLCanvasElement | null>(null);
+let ctx: CanvasRenderingContext2D | null = null;
 let canvasWidth = 0;
 let canvasHeight = 0;
 
@@ -359,7 +362,7 @@ let canvasHeight = 0;
 let isDragging = false;
 let lastMouseX = 0;
 let lastMouseY = 0;
-const mousePosition = ref(null);
+const mousePosition = ref<{ x: number; y: number } | null>(null);
 
 // 函数库分类
 const functionLib = {
@@ -442,7 +445,7 @@ const mathFunctions = {
 
   // 幂指对
   sqrt: Math.sqrt,
-  cbrt: (x) => Math.cbrt(x) || Math.pow(x, 1/3),
+  cbrt: (x: number) => Math.cbrt(x) || Math.pow(x, 1/3),
   exp: Math.exp,
   log: Math.log,
   log10: Math.log10,
@@ -453,42 +456,42 @@ const mathFunctions = {
   sin: Math.sin,
   cos: Math.cos,
   tan: Math.tan,
-  cot: (x) => 1 / Math.tan(x),
-  sec: (x) => 1 / Math.cos(x),
-  csc: (x) => 1 / Math.sin(x),
+  cot: (x: number) => 1 / Math.tan(x),
+  sec: (x: number) => 1 / Math.cos(x),
+  csc: (x: number) => 1 / Math.sin(x),
 
   // 反三角函数
   asin: Math.asin,
   acos: Math.acos,
   atan: Math.atan,
-  acot: (x) => Math.PI/2 - Math.atan(x),
-  asec: (x) => Math.acos(1/x),
-  acsc: (x) => Math.asin(1/x),
+  acot: (x: number) => Math.PI/2 - Math.atan(x),
+  asec: (x: number) => Math.acos(1/x),
+  acsc: (x: number) => Math.asin(1/x),
 
   // 双曲函数
   sinh: Math.sinh,
   cosh: Math.cosh,
   tanh: Math.tanh,
-  coth: (x) => 1 / Math.tanh(x),
-  sech: (x) => 1 / Math.cosh(x),
-  csch: (x) => 1 / Math.sinh(x),
+  coth: (x: number) => 1 / Math.tanh(x),
+  sech: (x: number) => 1 / Math.cosh(x),
+  csch: (x: number) => 1 / Math.sinh(x),
 
   // 常数
   PI: Math.PI,
   E: Math.E,
 
   // 特殊函数
-  sinc: (x) => x === 0 ? 1 : Math.sin(x) / x,
+  sinc: (x: number) => x === 0 ? 1 : Math.sin(x) / x,
 
   // 分段函数
-  square: (x) => Math.sign(Math.sin(x)),
-  sawtooth: (x) => x - Math.floor(x),
-  triangle: (x) => 2 * Math.abs(x - Math.floor(x) - 0.5),
-  heaviside: (x) => x >= 0 ? 1 : 0,
-  dirichlet: (x) => Number.isInteger(x) ? 1 : 0,
+  square: (x: number) => Math.sign(Math.sin(x)),
+  sawtooth: (x: number) => x - Math.floor(x),
+  triangle: (x: number) => 2 * Math.abs(x - Math.floor(x) - 0.5),
+  heaviside: (x: number) => x >= 0 ? 1 : 0,
+  dirichlet: (x: number) => Number.isInteger(x) ? 1 : 0,
 
   // 伽马函数 Γ(x)
-  gamma: (z) => {
+  gamma: (z: number): number => {
     if (z <= 0 && Number.isInteger(z)) return NaN;
     if (z < 0.5) return Math.PI / (Math.sin(Math.PI * z) * mathFunctions.gamma(1 - z));
 
@@ -507,7 +510,7 @@ const mathFunctions = {
   },
 
   // 贝塞尔函数 J0
-  besselJ0: (x) => {
+  besselJ0: (x: number): number => {
     if (x < 0) return mathFunctions.besselJ0(-x);
     let sum = 0;
     let term = 1;
@@ -520,7 +523,7 @@ const mathFunctions = {
   },
 
   // 贝塞尔函数 J1
-  besselJ1: (x) => {
+  besselJ1: (x: number): number => {
     if (x === 0) return 0;
     if (x < 0) return -mathFunctions.besselJ1(-x);
     let sum = 0;
@@ -534,7 +537,7 @@ const mathFunctions = {
   },
 
   // 误差函数
-  erf: (x) => {
+  erf: (x: number) => {
     const sign = x >= 0 ? 1 : -1;
     x = Math.abs(x);
     const a1 = 0.254829592;
@@ -550,7 +553,7 @@ const mathFunctions = {
   },
 
   // 黎曼ζ函数
-  zeta: (x) => {
+  zeta: (x: number) => {
     if (x === 1) return Infinity;
     if (x < 1) return NaN;
     let sum = 0;
@@ -562,19 +565,19 @@ const mathFunctions = {
 };
 
 // 更新X轴范围
-const updateXRange = (val) => {
+const updateXRange = (val: number[]) => {
   xMin.value = val[0];
   xMax.value = val[1];
 };
 
 // 更新Y轴范围
-const updateYRange = (val) => {
+const updateYRange = (val: number[]) => {
   yMin.value = val[0];
   yMax.value = val[1];
 };
 
 // 设置视图预设
-const setViewPreset = (type) => {
+const setViewPreset = (type: string) => {
   switch(type) {
     case 'default':
       xMin.value = -6; xMax.value = 6;
@@ -599,14 +602,14 @@ const setViewPreset = (type) => {
 };
 
 // 解析并计算函数值
-const computeFunction = (expr, x) => {
+const computeFunction = (expr: string, x: number) => {
   if (!expr || expr.trim() === '') return NaN;
 
   // 处理幂运算符
   let processedExpr = expr.replace(/\^/g, '**');
 
   try {
-    const context = {
+    const context: { [key: string]: any } = {
       x: x,
       ...mathFunctions
     };
@@ -622,7 +625,7 @@ const computeFunction = (expr, x) => {
     }
     return result;
   } catch (e) {
-    throw new Error(`表达式错误: ${e.message}`);
+    throw new Error(`表达式错误: ${(e as Error).message}`);
   }
 };
 
@@ -652,7 +655,7 @@ const generateAllData = () => {
         const y = computeFunction(func.expression, x);
         points.push({ x, y });
       } catch (e) {
-        errorMessage.value = `函数 ${fIndex + 1}: ${e.message}`;
+        errorMessage.value = `函数 ${fIndex + 1}: ${(e as Error).message}`;
         hasError = true;
         break;
       }
@@ -673,10 +676,10 @@ const generateAllData = () => {
 };
 
 // 坐标转换
-const toCanvasX = (x) => ((x - xMin.value) / (xMax.value - xMin.value)) * canvasWidth;
-const toCanvasY = (y) => canvasHeight - ((y - yMin.value) / (yMax.value - yMin.value)) * canvasHeight;
-const toMathX = (canvasX) => (canvasX / canvasWidth) * (xMax.value - xMin.value) + xMin.value;
-const toMathY = (canvasY) => ((canvasHeight - canvasY) / canvasHeight) * (yMax.value - yMin.value) + yMin.value;
+const toCanvasX = (x: number) => ((x - xMin.value) / (xMax.value - xMin.value)) * canvasWidth;
+const toCanvasY = (y: number) => canvasHeight - ((y - yMin.value) / (yMax.value - yMin.value)) * canvasHeight;
+const toMathX = (canvasX: number) => (canvasX / canvasWidth) * (xMax.value - xMin.value) + xMin.value;
+const toMathY = (canvasY: number) => ((canvasHeight - canvasY) / canvasHeight) * (yMax.value - yMin.value) + yMin.value;
 
 // 绘制坐标轴
 const drawAxes = () => {
@@ -684,8 +687,8 @@ const drawAxes = () => {
 
   ctx.save();
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = '#333333';
-  ctx.fillStyle = '#333333';
+  ctx.strokeStyle = '#5A4A6B';
+  ctx.fillStyle = '#5A4A6B';
   ctx.font = '11px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -737,12 +740,12 @@ const drawAxes = () => {
         ctx.beginPath();
         ctx.moveTo(canvasX, xAxisY - 5);
         ctx.lineTo(canvasX, xAxisY + 5);
-        ctx.strokeStyle = '#666666';
+        ctx.strokeStyle = '#7E6B8F';
         ctx.lineWidth = 1;
         ctx.stroke();
 
         ctx.save();
-        ctx.fillStyle = '#666666';
+        ctx.fillStyle = '#7E6B8F';
         ctx.font = '10px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
@@ -760,12 +763,12 @@ const drawAxes = () => {
         ctx.beginPath();
         ctx.moveTo(yAxisX - 5, canvasY);
         ctx.lineTo(yAxisX + 5, canvasY);
-        ctx.strokeStyle = '#666666';
+        ctx.strokeStyle = '#7E6B8F';
         ctx.lineWidth = 1;
         ctx.stroke();
 
         ctx.save();
-        ctx.fillStyle = '#666666';
+        ctx.fillStyle = '#7E6B8F';
         ctx.font = '10px Arial';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
@@ -776,7 +779,7 @@ const drawAxes = () => {
 
     // 轴标签
     ctx.save();
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = '#5A4A6B';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -801,7 +804,7 @@ const drawGrid = () => {
 
   ctx.save();
   ctx.lineWidth = 0.5;
-  ctx.strokeStyle = '#e0e0e0';
+  ctx.strokeStyle = 'rgba(126, 107, 143, 0.15)';
 
   const xStep = calculateStepSize(xMin.value, xMax.value);
   const yStep = calculateStepSize(yMin.value, yMax.value);
@@ -830,7 +833,7 @@ const drawGrid = () => {
 };
 
 // 绘制函数图像
-const drawFunctions = (allPoints) => {
+const drawFunctions = (allPoints: { x: number; y: number }[][]) => {
   if (!ctx) return;
 
   for (let fIndex = 0; fIndex < allPoints.length; fIndex++) {
@@ -885,7 +888,7 @@ const drawFunctions = (allPoints) => {
 };
 
 // 计算步长
-const calculateStepSize = (min, max) => {
+const calculateStepSize = (min: number, max: number) => {
   const range = max - min;
   if (range <= 0) return 1;
 
@@ -909,7 +912,9 @@ const draw = () => {
   if (!functionCanvas.value) return;
 
   ctx = functionCanvas.value.getContext('2d');
+  if (!ctx) return;
   const container = functionCanvas.value.parentElement;
+  if (!container) return;
   canvasWidth = container.clientWidth;
   canvasHeight = container.clientHeight;
 
@@ -927,7 +932,7 @@ const draw = () => {
 };
 
 // 鼠标移动事件 - 更新坐标显示
-const handleMouseMove = (e) => {
+const handleMouseMove = (e: MouseEvent) => {
   if (!functionCanvas.value) return;
 
   const rect = functionCanvas.value.getBoundingClientRect();
@@ -946,11 +951,11 @@ const handleMouseMove = (e) => {
     const dx = currentX - lastMouseX;
     const dy = currentY - lastMouseY;
 
-    const xRange = xMax.value - xMin.value;
-    const yRange = yMax.value - yMin.value;
+    const xSpan = xMax.value - xMin.value;
+    const ySpan = yMax.value - yMin.value;
 
-    const deltaX = (dx / canvasWidth) * xRange;
-    const deltaY = -(dy / canvasHeight) * yRange;
+    const deltaX = (dx / canvasWidth) * xSpan;
+    const deltaY = -(dy / canvasHeight) * ySpan;
 
     xMin.value -= deltaX;
     xMax.value -= deltaX;
@@ -968,11 +973,13 @@ const handleMouseMove = (e) => {
 };
 
 // 交互：鼠标按下
-const handleMouseDown = (e) => {
+const handleMouseDown = (e: MouseEvent) => {
   isDragging = true;
   lastMouseX = e.offsetX;
   lastMouseY = e.offsetY;
-  functionCanvas.value.style.cursor = 'grabbing';
+  if (functionCanvas.value) {
+    functionCanvas.value.style.cursor = 'grabbing';
+  }
 };
 
 // 交互：鼠标松开
@@ -984,7 +991,7 @@ const handleMouseUp = () => {
 };
 
 // 交互：滚轮缩放
-const handleWheel = (e) => {
+const handleWheel = (e: WheelEvent) => {
   e.preventDefault();
 
   const zoomFactor = 0.9;
@@ -1040,7 +1047,7 @@ const addFunction = () => {
 };
 
 // 删除函数
-const removeFunction = (index) => {
+const removeFunction = (index: number) => {
   if (functions.value.length <= 1) {
     ElMessage.warning('至少保留一个函数');
     return;
@@ -1054,7 +1061,7 @@ const removeFunction = (index) => {
 };
 
 // 添加示例函数
-const addExample = (expr) => {
+const addExample = (expr: string) => {
   if (functions.value.length >= 8) {
     ElMessage.warning('最多只能添加8个函数');
     return;
@@ -1102,14 +1109,25 @@ onUnmounted(() => {
 .function-plotter {
   display: flex;
   height: 100vh;
-  background-color: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding-top: 67px; /* Header 高度 */
+  background: transparent;
+  font-family: "STKaiti", "KaiTi", serif;
+
+  /* 局部定制 Element Plus 主题色为项目主色 */
+  --el-color-primary: #7E6B8F;
+  --el-color-primary-light-3: #9D8DB0;
+  --el-color-primary-light-5: #B3A6C2;
+  --el-color-primary-light-7: #C9BFD4;
+  --el-color-primary-light-8: #D5CDDE;
+  --el-color-primary-light-9: #E8E3EC;
+  --el-color-primary-dark-2: #6D5B7F;
 }
 
 .control-panel {
   width: 450px;
-  background-color: #ffffff;
-  border-right: 1px solid #e4e7ed;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-right: 1px solid rgba(126, 107, 143, 0.2);
+  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
   padding: 16px;
 
   .panel-header {
@@ -1118,7 +1136,7 @@ onUnmounted(() => {
     justify-content: space-between;
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 2px solid #ecf5ff;
+    border-bottom: 2px solid #7E6B8F;
 
     .title {
       display: flex;
@@ -1126,20 +1144,24 @@ onUnmounted(() => {
       gap: 8px;
       font-size: 1.25rem;
       font-weight: 600;
-      color: #303133;
+      color: #7E6B8F;
       margin: 0;
+      font-family: "STKaiti", "KaiTi", serif;
     }
   }
 
   .section-card {
     margin-bottom: 16px;
+    border: 1px solid rgba(126, 107, 143, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
 
     .card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-weight: 500;
-      color: #606266;
+      color: #7E6B8F;
     }
   }
 
@@ -1155,7 +1177,7 @@ onUnmounted(() => {
       .function-expression {
         flex: 1;
         font-size: 0.9rem;
-        color: #303133;
+        color: #444;
         margin-right: 8px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1179,7 +1201,7 @@ onUnmounted(() => {
 
           .label {
             font-size: 0.8rem;
-            color: #909399;
+            color: #888;
           }
         }
       }
@@ -1199,14 +1221,14 @@ onUnmounted(() => {
       .axis-label {
         display: block;
         font-size: 0.9rem;
-        color: #606266;
+        color: #666;
         margin-bottom: 8px;
       }
 
       .range-value {
         text-align: right;
         font-size: 0.8rem;
-        color: #909399;
+        color: #888;
         margin-top: 4px;
       }
     }
@@ -1227,12 +1249,12 @@ onUnmounted(() => {
 
       .label {
         min-width: 60px;
-        color: #606266;
+        color: #666;
       }
 
       .value {
         min-width: 45px;
-        color: #409EFF;
+        color: #7E6B8F;
         font-weight: 500;
       }
     }
@@ -1251,8 +1273,8 @@ onUnmounted(() => {
   }
 
   .tips-card {
-    background-color: #f4f4f5;
-    border-color: #e9e9eb;
+    background-color: rgba(126, 107, 143, 0.05);
+    border-color: rgba(126, 107, 143, 0.2);
 
     :deep(.el-descriptions__cell) {
       padding: 6px 8px !important;
@@ -1273,8 +1295,9 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(126, 107, 143, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
     overflow: hidden;
     position: relative;
 
@@ -1326,13 +1349,14 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .function-plotter {
     flex-direction: column;
+    padding-top: 60px; /* 平板 Header 高度 */
   }
 
   .control-panel {
     width: 100%;
     height: 50vh;
     border-right: none;
-    border-bottom: 1px solid #e4e7ed;
+    border-bottom: 1px solid rgba(126, 107, 143, 0.2);
   }
 
   .plot-area {
@@ -1341,31 +1365,47 @@ onUnmounted(() => {
   }
 }
 
-// 暗色模式支持
-@media (prefers-color-scheme: dark) {
+// 小屏手机适配
+@media (max-width: 576px) {
   .function-plotter {
-    background-color: #1e1e1e;
+    padding-top: 56px; /* 手机 Header 高度 */
   }
 
   .control-panel {
-    background-color: #252526;
-    border-right-color: #3e3e42;
+    padding: 12px;
+  }
+
+  .plot-area {
+    padding: 6px;
+  }
+}
+
+// 暗色模式支持
+@media (prefers-color-scheme: dark) {
+  .function-plotter {
+    background-color: transparent;
+  }
+
+  .control-panel {
+    background-color: rgba(30, 26, 40, 0.95);
+    border-right-color: rgba(126, 107, 143, 0.3);
 
     .panel-header {
-      border-bottom-color: #3e3e42;
+      border-bottom-color: rgba(126, 107, 143, 0.4);
 
       .title {
-        color: #ffffff;
+        color: #C9BFD4;
       }
     }
   }
 
   .plot-area .plot-container {
-    background-color: #1e1e1e;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
+    background-color: #1E1A28;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-color: rgba(126, 107, 143, 0.3);
 
     .function-canvas {
-      background-color: #1e1e1e;
+      background-color: #1E1A28;
     }
   }
 }

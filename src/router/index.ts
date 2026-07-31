@@ -29,6 +29,12 @@ const router = createRouter({
             name: 'Study',
             component: () => import('@/views/Study.vue')
         },
+        // 函数绘图
+        {
+            path: '/math-graph',
+            name: 'MathGraph',
+            component: () => import('@/views/MathFunctionGraph.vue')
+        },
         // 测试
         {
             path: '/test',
