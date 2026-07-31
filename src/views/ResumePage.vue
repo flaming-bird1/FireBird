@@ -14,7 +14,7 @@
     <div class="resume-content">
       <div class="container">
         <div class="markdown-card">
-          <MarkdownViewer file-path="/articles/resume.md" />
+          <MarkdownViewer :file-path="resumePath" />
         </div>
       </div>
     </div>
@@ -22,8 +22,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import Header from "@/components/Header.vue";
 import MarkdownViewer from "@/components/MarkdownViewer.vue";
+
+// 动态拼接 base 路径，兼容 GitHub Pages 部署（/FireBird/）和本地开发
+const resumePath = computed(() => `${import.meta.env.BASE_URL}articles/resume.md`)
 </script>
 
 <style scoped lang="scss">

@@ -61,7 +61,7 @@ export const getResumeHonors = (): ResumeHonor[] => {
         // 大三
         {id: '14', name: '第十九届中国成都软件设计与应用大赛总决赛-优胜奖', level: '国赛', grade: '大三'},
         {id: '15', name: '第十九届全国大学生软件创新大赛-国赛三等奖', level: '国赛', grade: '大三'},
-        {id: '16', name: '第八届传智杯全国大学生IT技能大赛-AI WEB网页开发挑战赛-国赛二等奖', level: '国赛', grade: '大三'},
+        {id: '16', name: '第八届传智杯全国大学生IT技能大赛-AI WEB网页开发挑战赛-国赛三等奖', level: '国赛', grade: '大三'},
         {id: '17', name: '第19届中国大学生计算机设计大赛-省赛三等奖', level: '省赛', grade: '大三'},
         {id: '18', name: '第八届码蹄杯程序设计大赛-校赛铜奖', level: '校赛', grade: '大三'},
         {id: '19', name: '第八届传智杯全国大学生IT技能大赛-AI大模型创新应用挑战赛-初赛一等奖', level: '校赛', grade: '大三'},
@@ -69,6 +69,13 @@ export const getResumeHonors = (): ResumeHonor[] => {
         {id: '21', name: '软件著作权-空间经济分析平台', level: '证书', grade: '大三'},
         {id: '22', name: '第十九届全国大学生节能减排社会实践与科技竞赛-校赛三等奖', level: '校赛', grade: '大三'},
         {id: '23', name: '2026年海峡两岸暨港澳地区大学生计算机创新作品赛四川省赛-省赛三等奖', level: '省赛', grade: '大三'},
+        {id: '24', name: '2026年第二届全国大学生气象科技创新大赛-校赛二等奖', level: '校赛', grade: '大三'},
+        {id: '25', name: '第十五届“中国软件杯”大学生软件设计大赛-校赛二等奖', level: '校赛', grade: '大三'},
+        {id: '26', name: '2026中国高校计算机大赛-网络技术挑战赛A-西南赛区二等奖-热网智防', level: '省赛', grade: '大三'},
+        {id: '27', name: '2026中国高校计算机大赛-网络技术挑战赛A-西南赛区三等奖-银龄智护', level: '省赛', grade: '大三'},
+        {id: '28', name: '2026中国高校计算机大赛-网络技术挑战赛A-ICV-西南赛区三等奖-视界巡警', level: '省赛', grade: '大三'},
+        {id: '29', name: 'HarmonyOs应用开发者高级认证', level: '证书', grade: '大三'},
+        {id: '30', name: '2026中国高校计算机大赛-AIGC创新赛-西南赛区二等奖-智课回声', level: '省赛', grade: '大三'},
     ]
 }
 
@@ -82,6 +89,15 @@ export const getResumeProjects = (): ResumeProject[] => {
             detail: '采用组件化架构，封装 MarkdownViewer/PDFViewer 等可复用组件和 useScrollAnimation 组合式函数，组件复用率 80%；数据层与视图层分离，实现关注点分离。配置路由懒加载 + Vite esbuild 压缩，首屏加载减少 40%，打包速度提升 50%，包体积减小 35%；集成 sharp 图片压缩，资源体积减小 30%。设计完整 TypeScript 类型系统（Article/LifeMoment 等接口），覆盖率 100%，零运行时错误。基于 marked + highlight.js 实现 Markdown 渲染与代码高亮，集成 DOMPurify 防 XSS；使用 pdfjs-dist 实现 PDF 预览；开发图片查看器支持键盘导航、背景模糊。实现动态目录激活（IntersectionObserver）、平滑滚动定位；独创国风视觉系统（山水渐变、打字机动画、滚动渐显），完全响应式适配多终端。',
             tags: ['Vue 3.5', 'TypeScript 5.7', 'Vite 6.0', 'Element Plus', 'Pinia', 'marked', 'pdfjs-dist'],
             projectUrl: 'http://1.95.153.56:5189/',
+            giteeUrl: ''
+        },
+        {
+            id: '2',
+            name: '智课回声——AI驱动的自适应学习与教学反馈平台',
+            description: '面向数据结构课程的全流程智慧教学平台，以「用户画像」为数据中枢、「多智能体协同」为执行引擎，构建「学→练→评→改」个性化学习闭环。集成 RAG 教材问答、AI 诊断式批改、知识点级能力画像、学习预警干预、语音交互助教等核心能力，覆盖教师教学与学生学习的全链路场景。',
+            detail: '后端采用 Flask 蓝图架构，设计 10 大业务模块（用户权限/课程教材/作业题库/提交批改/画像中心/推荐路径/预警干预/智能体交互/教师学情/资源中心），MySQL 数据库 30+ 张表，涵盖知识点树形结构、能力画像动态更新、画像变更历史（数据飞轮）、多智能体任务日志等核心表设计。AI 层集成 vivo 蓝心大模型（Doubao-Seed-2.0-mini）+ m3e-base 向量化模型 + Chroma 向量数据库，实现完整 RAG 流水线：查询改写 → 文本向量化 → 语义检索 Top-K → 大模型生成 → 结果缓存，教材 PDF 经 LangChain 递归切分后向量化入库，划词问答命中率与响应速度通过 AI 回答缓存表二次优化。批改智能体实现选择题直接比对 + 简答题 LLM 语义评分（正确性60%/完整性20%/表达20%三维评估），自动分类错因（计算/概念/审题/格式）并映射知识点影响值，异步线程触发批改后自动更新 ability_profiles 能力画像 + ability_profile_history 变更历史 + alert_records 学习预警（连续低分/活跃度下降/掌握度骤降等5条规则引擎）。前端基于 uni-app 跨端开发（H5/App/小程序三端适配），26 个页面覆盖教师端（课程管理/学情分析/教学诊断/问卷系统/课程评价）与学生端（教材学习/AI助学/作业答题/学习画像/资源中心）。AI 智能助教模块实现完整语音交互闭环：录音 → ffmpeg 转 PCM 16k → vivo ASR WebSocket 识别 → 自动发送 → LLM 回答 → vivo TTS WebSocket 合成 → uni.downloadFile 下载播放，支持 20+ 音色切换（短音频/长音频/超拟人三类引擎），通过 _speechRequestId 机制解决打断后重复播放问题。资源中心实现 12 种算法（7种排序+2种查找+3种数据结构）的本地步骤生成器，逐帧输出比较/交换/指针状态供前端动画渲染，代码讲解支持文件上传与文本输入双模式 + 语言自动检测 + LLM 分析 + 本地模板兜底 + SHA256 哈希缓存。学习画像页面聚合知识点掌握度、六大能力维度雷达图、掌握度分布、周变化趋势、章节统计、预警提醒等多维数据可视化。问卷系统支持 AI 优化措辞 + 评分/单选/多选/文本四种题型 + AI 分析报告生成。采用 JWT 认证 + 角色权限控制（student/teacher/admin），QQ 邮箱 SMTP 验证码注册，gunicorn + systemd 部署于 Linux 服务器。',
+            tags: ['uni-app', 'Vue', 'Flask', 'MySQL', 'Chroma', 'vivo蓝心大模型', 'RAG', 'WebSocket', 'LangChain', 'ffmpeg'],
+            projectUrl: 'http://8.156.67.132:6010/',
             giteeUrl: ''
         },
         {

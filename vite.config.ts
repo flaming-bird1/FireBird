@@ -25,6 +25,18 @@ export default defineConfig({
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vue 核心框架
+          'vendor': ['vue', 'vue-router', 'pinia'],
+          // Element Plus UI 库（体积较大，单独拆包）
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          // Markdown 相关库（marked + highlight.js + DOMPurify）
+          'markdown': ['marked', 'highlight.js', 'dompurify'],
+        },
+      },
+    },
   },
   server: {
     host: '0.0.0.0',
