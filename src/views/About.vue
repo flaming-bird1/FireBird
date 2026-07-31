@@ -1,7 +1,9 @@
 <template>
-  <div class="resume-page">
+  <div class="resume-page app-page">
     <Header></Header>
 
+    <!-- 主体容器：占据 Header 以下全部视口，内容溢出时内部滚动 -->
+    <div class="app-main">
     <!--    页面横幅（包含基本信息卡片）-->
     <div class="banner">
       <div class="banner-content">
@@ -13,7 +15,7 @@
         <div class="basic-card">
           <div class="avatar-section">
             <div class="avatar">
-              <img src="@/assets/images/logo.png" alt="头像">
+              <img src="../assets/images/logo.png" alt="头像">
             </div>
             <div class="basic-info">
               <h2>{{ resumeBaseInfo.name }}</h2>
@@ -305,7 +307,7 @@
           <div class="widget author-widget">
             <div class="author-card">
               <div class="author-avatar">
-                <img src="@/assets/images/logo.png" alt="头像">
+                <img src="../assets/images/logo.png" alt="头像">
               </div>
               <h3 class="author-name">{{ resumeBaseInfo.name }}</h3>
               <p class="author-bio">追求·奋斗·拼搏·热爱</p>
@@ -355,6 +357,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -368,8 +371,8 @@ import {
   getResumeSkills,
   getResumeHonors,
   getResumeProjects
-} from '@/data/resume'
-import type { ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor } from '@/types/resume'
+} from '@/data/resume.ts'
+import type { ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor } from '@/types/resume.ts'
 
 const resumeBaseInfo = getResumeBaseInfo() as ResumeBaseInfo
 const resumeEducation = getResumeEducation() as ResumeEducation
@@ -491,9 +494,15 @@ const renderMarkdown = (content: string) => {
   width: 100%;
 }
 
+/* 主体容器：Header 之下占满剩余视口，纵向排列；溢出由全局 .app-main 内部滚动 */
+.app-main {
+  display: flex;
+  flex-direction: column;
+}
+
 /* 页面横幅 */
 .banner {
-  margin-top: 67px;
+  flex-shrink: 0;
   padding: 0 20px 2rem;
   display: flex;
   align-items: center;
@@ -614,11 +623,11 @@ const renderMarkdown = (content: string) => {
   }
 }
 
-/* 主要内容区域 - 占据剩余视口高度 */
+/* 主要内容区域 - 占据剩余全部空间，溢出时在内部滚动 */
 .resume-content {
-  height: calc(100vh - 67px);
+  flex: 1;
+  min-height: 0;
   padding: 1rem 0;
-  overflow: hidden;
 }
 
 .container {

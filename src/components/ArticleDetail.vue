@@ -1,9 +1,10 @@
 <!-- ArticleDetail.vue -->
 <template>
-  <div class="article-detail-page">
+  <div class="article-detail-page app-page">
     <Header></Header>
     <!--    <header-tech-vision></header-tech-vision>-->
 
+    <div class="app-main" ref="mainRef">
     <!-- 文章内容 -->
     <div class="content">
       <div class="article-container">
@@ -126,6 +127,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -152,28 +154,34 @@ const activeHeadingId = ref<string>('')
 const isTocFixed = ref(false)
 const tocOffsetTop = ref(0)
 const total = ref(0)
+// 主体滚动容器引用
+const mainRef = ref<HTMLElement | null>(null)
 
 // 计算目录的初始位置
 const calculateTocPosition = () => {
   const tocElement = document.querySelector('.toc-container') as HTMLElement
-  if (tocElement) {
+  const container = mainRef.value
+  if (tocElement && container) {
     const rect = tocElement.getBoundingClientRect()
-    tocOffsetTop.value = rect.top + window.scrollY
+    tocOffsetTop.value = rect.top - container.getBoundingClientRect().top + container.scrollTop
   }
 }
 
 // 修改滚动处理函数
 const handleScroll = () => {
   if (headings.value.length === 0) return
+  const container = mainRef.value
+  if (!container) return
 
-  const scrollPosition = window.scrollY + 120 // 提前激活的偏移量
+  const containerTop = container.getBoundingClientRect().top
+  const scrollPosition = containerTop + 120 // 提前激活的偏移量
 
   // 找到当前激活的标题
   let currentActiveId = ''
   for (let i = headings.value.length - 1; i >= 0; i--) {
     const heading = headings.value[i]
     const element = document.getElementById(heading.id)
-    if (element && element.offsetTop <= scrollPosition) {
+    if (element && element.getBoundingClientRect().top <= scrollPosition) {
       currentActiveId = heading.id
       break
     }
@@ -184,7 +192,7 @@ const handleScroll = () => {
   }
 
   // 处理目录固定
-  const scrollY = window.scrollY
+  const scrollY = container.scrollTop
   const headerHeight = 67 // Header的高度
   const fixedThreshold = tocOffsetTop.value - headerHeight - 20
 
@@ -227,10 +235,11 @@ const handleHeadingsUpdate = (newHeadings: Array<{id: string, text: string, leve
 // 滚动到指定标题
 const scrollToHeading = (id: string) => {
   const element = document.getElementById(id)
-  if (element) {
-    const offsetTop = element.offsetTop - 100 // 考虑固定头部的高度
-    window.scrollTo({
-      top: offsetTop,
+  const container = mainRef.value
+  if (element && container) {
+    const top = element.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop - 100 // 考虑固定头部的高度
+    container.scrollTo({
+      top,
       behavior: 'smooth'
     })
     activeHeadingId.value = id
@@ -266,7 +275,7 @@ const shareArticle = () => {
 onMounted(() => {
   loadArticle()
   total.value = getAllArticles().total
-  window.addEventListener('scroll', handleScroll)
+  mainRef.value?.addEventListener('scroll', handleScroll)
 
   // 在下一个tick计算位置，确保DOM已渲染
   nextTick(() => {
@@ -281,7 +290,7 @@ onMounted(() => {
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  mainRef.value?.removeEventListener('scroll', handleScroll)
   window.removeEventListener('resize', calculateTocPosition)
 })
 </script>
@@ -292,9 +301,8 @@ onUnmounted(() => {
 }
 
 .content {
-  min-height: 100vh;
-  margin-top: 20px ;
-  padding: 4rem 0;
+  min-height: calc(100vh - 67px);
+  padding: 2rem 0 4rem;
 }
 
 .article-container {

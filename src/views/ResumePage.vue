@@ -1,7 +1,8 @@
 <template>
-  <div class="resume-page">
+  <div class="resume-page app-page">
     <Header></Header>
 
+    <div class="app-main">
     <!-- 页面横幅 -->
     <div class="banner">
       <div class="banner-content">
@@ -17,6 +18,7 @@
           <MarkdownViewer :file-path="resumePath" />
         </div>
       </div>
+    </div>
     </div>
   </div>
 </template>
@@ -43,7 +45,6 @@ const resumePath = computed(() => `${import.meta.env.BASE_URL}articles/resume.md
 
 /* 页面横幅 */
 .banner {
-  margin-top: 67px;
   padding: 3rem 20px 2rem;
   display: flex;
   align-items: center;

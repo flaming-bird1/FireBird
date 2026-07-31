@@ -1,7 +1,8 @@
 <template>
-  <div class="life-page">
+  <div class="life-page app-page">
     <Header></Header>
 
+    <div class="app-main">
     <!-- 页面横幅 -->
     <div class="banner">
       <div class="banner-content">
@@ -111,6 +112,7 @@
         <button class="nav-btn next" @click.stop="nextImage">›</button>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -212,7 +214,6 @@ const formatTime = (timeString: string) => {
 <style scoped>
 
 .banner {
-  margin-top: 67px; /* 头部固定高度 */
   /*padding: 67px 20px 0;*/
   /*margin-top: 67px; /* 头部高度，但会遮挡头部 */
   padding: 0 20px;
@@ -319,7 +320,7 @@ const formatTime = (timeString: string) => {
 
 /* 主内容区样式 */
 .life-content {
-  min-height: 100vh;
+  min-height: calc(100vh - 67px);
   padding: 4rem 0;
 }
 
@@ -632,7 +633,6 @@ const formatTime = (timeString: string) => {
 @media (max-width: 768px) {
   .banner {
     height: 50vh;
-    margin-top: 60px;
   }
 
   .banner h1 {
@@ -703,7 +703,6 @@ const formatTime = (timeString: string) => {
 @media (max-width: 480px) {
   .banner {
     height: 40vh;
-    margin-top: 55px;
     padding: 0 15px;
   }
 

@@ -64,3 +64,33 @@ a {
 ul {
     list-style: none;
 }
+
+/* ========== 页面通用布局：Header 固定 + 主体占满剩余视口 + 主体内部滚动 ========== */
+/* 页面根容器：占满视口、禁止整页滚动 */
+.app-page {
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 主体容器：占据 Header 以下的全部视口，内容溢出时在容器内部滚动 */
+.app-main {
+    height: calc(100vh - 67px); /* Header 高度 */
+    margin-top: 67px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .app-main {
+        height: calc(100vh - 60px); /* 平板 Header 高度 */
+        margin-top: 60px;
+    }
+}
+
+@media (max-width: 576px) {
+    .app-main {
+        height: calc(100vh - 56px); /* 手机 Header 高度 */
+        margin-top: 56px;
+    }
+}

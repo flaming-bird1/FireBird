@@ -1,7 +1,8 @@
 <template>
-  <div class="home-page">
+  <div class="home-page app-page">
     <Header></Header>
     <!--    <header-tech-vision></header-tech-vision>-->
+    <div class="app-main">
     <!--   横幅-->
     <div class="banner">
       <!-- 国风背景元素 -->
@@ -137,6 +138,7 @@
     <div class="bottom-decoration">
       <div class="wave"></div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -218,7 +220,6 @@ const formatDate = (dateString: string) => {
 
 /* 国风横幅样式 */
 .banner {
-  margin-top: 67px;
   padding: 0 20px;
   height: calc(100vh - 67px);
   display: flex;
@@ -396,7 +397,7 @@ const formatDate = (dateString: string) => {
 
 /* 内容区域 */
 .content {
-  min-height: 100vh;
+  min-height: calc(100vh - 67px);
   padding: 4rem 0;
   background: transparent;
 }
@@ -823,7 +824,6 @@ const formatDate = (dateString: string) => {
 @media (max-width: 768px) {
   .banner {
     height: 50vh;
-    margin-top: 60px;
   }
 
   .banner h1 {
@@ -880,7 +880,6 @@ const formatDate = (dateString: string) => {
 @media (max-width: 480px) {
   .banner {
     height: 40vh;
-    margin-top: 55px;
     padding: 0 15px;
   }
 

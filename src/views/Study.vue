@@ -1,8 +1,9 @@
 <!-- views/Study.vue -->
 <template>
-  <div class="study-page">
+  <div class="study-page app-page">
     <Header/>
 
+    <div class="app-main">
     <!-- 页面横幅 -->
     <div class="banner">
       <div class="banner-content">
@@ -266,6 +267,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -454,9 +456,7 @@ const getParagraphs = (text: string) => {
 }
 
 /* 页面横幅 */
-/* 页面横幅 */
 .banner {
-  margin-top: 67px;
   padding: 0 20px;
   height: calc(100vh - 67px);
   display: flex;
@@ -1157,7 +1157,6 @@ const getParagraphs = (text: string) => {
 @media (max-width: 768px) {
   .banner {
     height: 40vh;
-    margin-top: 60px;
 
     h1 {
       font-size: 2rem;
