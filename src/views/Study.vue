@@ -616,25 +616,6 @@ const getParagraphs = (text: string) => {
   padding: 1.5rem;
 }
 
-/* 滚动条样式 */
-.tab-content-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.tab-content-wrapper::-webkit-scrollbar-track {
-  background: rgba(126, 107, 143, 0.1);
-  border-radius: 3px;
-}
-
-.tab-content-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(126, 107, 143, 0.4);
-  border-radius: 3px;
-}
-
-.tab-content-wrapper::-webkit-scrollbar-thumb:hover {
-  background: rgba(126, 107, 143, 0.6);
-}
-
 .tab-pane {
   animation: fadeIn 0.3s ease;
 }
@@ -960,24 +941,6 @@ const getParagraphs = (text: string) => {
   height: 100%;
   overflow-y: auto;
   padding-right: 4px;
-}
-
-.right-content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.right-content::-webkit-scrollbar-track {
-  background: rgba(126, 107, 143, 0.1);
-  border-radius: 3px;
-}
-
-.right-content::-webkit-scrollbar-thumb {
-  background: rgba(126, 107, 143, 0.4);
-  border-radius: 3px;
-}
-
-.right-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(126, 107, 143, 0.6);
 }
 
 /* 侧边栏组件 */

@@ -3,6 +3,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+
+    /* Firefox 滚动条：窄 + 紫灰配色 */
+    scrollbar-width: thin;
+    scrollbar-color: #7e6b8f rgba(126, 107, 143, 0.08);
 }
 
 html {
@@ -63,6 +67,30 @@ a {
 
 ul {
     list-style: none;
+}
+
+/* ========== 全局滚动条样式（紫灰主题，契合项目风格） ========== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(126, 107, 143, 0.08);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #9b8aae 0%, #7e6b8f 100%);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #b09fc4 0%, #8a769c 100%);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 /* ========== 页面通用布局：Header 固定 + 主体占满剩余视口 + 主体内部滚动 ========== */

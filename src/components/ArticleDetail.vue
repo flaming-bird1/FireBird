@@ -613,23 +613,4 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 滚动条样式 */
-.toc-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.toc-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
-}
-
-.toc-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
-}
-
-.toc-container::-webkit-scrollbar-thumb:hover {
-  background: #7E6B8F;
-}
-
 </style>
