@@ -3,11 +3,26 @@
     <Header></Header>
 
     <div class="app-main">
-    <!-- 页面横幅 -->
+    <!-- 页面横幅（与首页统一风格） -->
     <div class="banner">
+      <!-- 光晕背景 -->
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
+      <!-- 国风背景元素 -->
+      <div class="chinese-bg-elements">
+        <div class="mountain-left"></div>
+        <div class="mountain-right"></div>
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+        <div class="bamboo bamboo-1"></div>
+        <div class="bamboo bamboo-2"></div>
+      </div>
+
       <div class="banner-content">
-        <h1>我的生活</h1>
+        <h1 class="banner-title">我的生活</h1>
         <p class="typing-text">记录生活中的每一个精彩瞬间</p>
+        <div class="chinese-border"></div>
       </div>
     </div>
 
@@ -127,7 +142,6 @@ import {
 } from '@/data/life'
 import type {LifeMoment} from '@/types/life'
 
-// 响应式数据
 const lifeMoments = ref<LifeMoment[]>([])
 const lifeAlbums = ref(getLifeAlbums())
 const lifeStats = ref(getLifeStats())
@@ -213,109 +227,222 @@ const formatTime = (timeString: string) => {
 
 <style scoped>
 
+/* 国风横幅（与首页统一风格） */
 .banner {
-  /*padding: 67px 20px 0;*/
-  /*margin-top: 67px; /* 头部高度，但会遮挡头部 */
   padding: 0 20px;
   height: calc(100vh - 67px);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column; /*弹性项目将沿垂直方向（从上到下）排列*/
   text-align: center;
   color: white;
-
   position: relative;
   overflow: hidden;
-  /*  background: rgba(75, 0, 130, 0.3);*/
-  /* 渐变遮罩背景 */
+  /* 渐变流动背景 */
   background: linear-gradient(
       135deg,
-      rgba(110, 95, 125, 0.4) 0%, /* 深紫色变体 */ rgba(126, 107, 143, 0.3) 50%, /* 主色调 #7E6B8F */ rgba(150, 135, 165, 0.2) 100% /* 浅紫色变体 */
+      rgba(110, 95, 125, 0.55) 0%,
+      rgba(126, 107, 143, 0.4) 30%,
+      rgba(150, 135, 165, 0.3) 65%,
+      rgba(126, 107, 143, 0.5) 100%
   );
+  background-size: 300% 300%;
+  animation: fb-gradient-flow 16s ease infinite;
 }
 
-.banner::before {
+/* 光晕背景 */
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-1 {
+  width: 440px;
+  height: 440px;
+  top: -140px;
+  left: -100px;
+  background: rgba(196, 181, 214, 0.35);
+  animation: fb-breathe 7s ease-in-out infinite;
+}
+
+.glow-2 {
+  width: 380px;
+  height: 380px;
+  bottom: -120px;
+  right: -80px;
+  background: rgba(155, 138, 174, 0.3);
+  animation: fb-breathe 9s ease-in-out 2s infinite;
+}
+
+/* 国风背景元素 */
+.chinese-bg-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.mountain-left {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 300px;
+  height: 200px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.6) 0%, transparent 100%);
+  clip-path: polygon(0% 100%, 100% 100%, 50% 0%);
+  opacity: 0.4;
+}
+
+.mountain-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 250px;
+  height: 180px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.5) 0%, transparent 100%);
+  clip-path: polygon(0% 100%, 100% 100%, 60% 0%);
+  opacity: 0.4;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 100px;
+  height: 40px;
+  top: 20%;
+  left: 10%;
+  animation: float 20s infinite linear;
+}
+
+.cloud-2 {
+  width: 150px;
+  height: 50px;
+  top: 30%;
+  right: 15%;
+  animation: float 25s infinite linear reverse;
+}
+
+.cloud-3 {
+  width: 80px;
+  height: 30px;
+  top: 40%;
+  left: 20%;
+  animation: float 18s infinite linear;
+}
+
+.bamboo {
+  position: absolute;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.8), rgba(161, 145, 178, 0.6));
+}
+
+.bamboo-1 {
+  left: 20%;
+  height: 150px;
+  transform: rotate(5deg);
+}
+
+.bamboo-2 {
+  right: 25%;
+  height: 120px;
+  transform: rotate(-5deg);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(20px) translateY(-10px);
+  }
 }
 
 .banner-content {
   position: relative;
   z-index: 2;
   max-width: 800px;
-  /*background: rgba(0, 0, 0, 0.3); /* 只在内容区域添加遮罩 */
-  /*backdrop-filter: blur(5px); /* 毛玻璃效果 */
 }
 
+/* 标题：与首页统一为楷体 */
 .banner h1 {
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  letter-spacing: 2px; /* 字符间距 */
+  font-family: "STKaiti", "KaiTi", serif;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 3px;
 }
 
-/**
- * 创建一个名为 typing 的动画，它将元素从左到右显示。
- * margin-top: 1.5rem;设置 <p> 标签顶部的外边距为 1.5rem，用于与上方元素拉开距离。
- * min-height: 2.5rem;设置 <p> 标签的最小高度为 2.5rem，确保即使文本内容较少，也能保持一定高度（避免布局抖动）。
- * overflow: hidden;隐藏超出 <p> 标签范围的内容，配合后续的打字效果，让未显示的文字暂时隐藏。
- * border-right: 2px solid rgba(255, 255, 255, 0.75);在 <p> 标签右侧添加一个 2px 宽的白色半透明边框，模拟打字时的光标。
- * white-space: nowrap;强制文本在一行内显示，不换行（确保打字效果是横向逐字展开，而非换行）。
- * animation: typing 3.5s steps(7, end), blink-caret 0.75s step-end infinite;同时应用两个动画：
-    * typing：时长 3.5 秒，通过 steps(7, end) 定义 “7 步完成动画”（即逐字显示 7 个字符），实现打字机逐字输出的效果。
-    * blink-caret：时长 0.75 秒，通过 step-end infinite 定义 “步进式闪烁且无限循环”，实现光标闪烁的效果。
- */
+/* 标题入场动画（与首页统一） */
+.banner-title {
+  opacity: 0;
+  animation: fb-fade-up 1s ease 0.2s forwards;
+}
 
+/* 副标题：与关于笔者页统一的循环打字效果与楷体 */
 .banner p {
-  /* 设置字体大小为 1.8rem（相对于根元素的字体大小） */
   font-size: 1.8rem;
-
-  /* 设置最小高度为 2.5rem，确保元素有足够的空间显示内容 */
   min-height: 2.5rem;
-
-  /* 隐藏超出元素尺寸的内容（用于动画中逐步显示文字） */
   overflow: hidden;
-
-  /* 添加一个右侧边框，模拟打字机光标效果 */
-  /* 4px 宽的实线边框，颜色为半透明白色（RGBA: 红255, 绿255, 蓝255, 透明度0.75） */
-  border-right: 4px solid rgba(255, 255, 255, 0.75);
-
-  /* 禁止文字换行，确保文字在同一行显示（动画需要单行滚动） */
+  border-right: 3px solid rgba(255, 255, 255, 0.75);
   white-space: nowrap;
-
-  /* 动态计算宽度：字体大小（1.8rem） × 13.3（约24个字符的宽度） */
-  /* 用于限制文字的显示区域，配合动画实现逐步显示的效果 */
-  width: calc(1.8rem * 13.3);
-
-  /* 设置外边距：上1.5rem，左右自动（水平居中），下0 */
+  width: 0;
   margin: 1.5rem auto 0;
-
-  /* 应用名为 typingCycle 的动画，持续10秒，无限循环播放 */
-  animation: typingLoop 9s steps(13, end) infinite;
+  animation: typingLoop 6s steps(13, end) infinite;
+  font-family: "STKaiti", "KaiTi", serif;
+  color: rgba(255, 255, 255, 0.95);
 }
 
-/*打字机逐字显示动画*/
+/* 循环打字动画（与关于笔者页一致） */
 @keyframes typingLoop {
   0% {
-    width: 0; /* 开始打字 */
+    width: 0;
   }
   40% {
-    width: calc(1.8rem * 13.3); /* 打字完成 */
+    width: 100%;
   }
   60% {
-    width: calc(1.8rem * 13.3); /* 保持显示 */
+    width: 100%;
   }
   100% {
-    width: 0; /* 重新开始 */
+    width: 0;
   }
 }
 
-@keyframes blink-caret {
-  from, to {
-    border-color: transparent
-  }
-  50% {
-    border-color: rgba(255, 255, 255, 0.75)
-  }
+/* 装饰线（与首页统一） */
+.chinese-border {
+  width: 300px;
+  height: 4px;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9), transparent);
+  margin: 2rem auto 0;
+  position: relative;
+  opacity: 0;
+  animation: fb-fade-up 0.9s ease 1s forwards;
+}
+
+.chinese-border::before,
+.chinese-border::after {
+  content: '卍';
+  position: absolute;
+  top: -15px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.5rem;
+}
+
+.chinese-border::before {
+  left: 0;
+}
+
+.chinese-border::after {
+  right: 0;
 }
 
 /* 主内容区样式 */
@@ -343,12 +470,59 @@ const formatTime = (timeString: string) => {
 }
 
 /* 动态卡片样式 */
+.timeline {
+  position: relative;
+  padding-left: 26px;
+}
+
+/* 时间线装饰竖线 */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #7E6B8F, rgba(126, 107, 143, 0.15));
+}
+
+/* 时间线圆点 */
 .moment-card {
+  position: relative;
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 1.5rem;
+  border: 1px solid rgba(126, 107, 143, 0.12);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.moment-card::before {
+  content: '';
+  position: absolute;
+  left: -25px;
+  top: 26px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #7E6B8F;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 3px rgba(126, 107, 143, 0.2), 0 0 10px rgba(126, 107, 143, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1;
+}
+
+.moment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(126, 107, 143, 0.22);
+  border-color: rgba(126, 107, 143, 0.35);
+}
+
+.moment-card:hover::before {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(126, 107, 143, 0.25), 0 0 16px rgba(126, 107, 143, 0.6);
 }
 
 .moment-header {
@@ -421,17 +595,43 @@ const formatTime = (timeString: string) => {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border-radius: 6px;
 }
 
 .image-item img {
   width: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.4s ease-in-out;
+}
+
+/* 图片 hover 遮罩 + 放大提示 */
+.image-item::after {
+  content: '⤢';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(126, 107, 143, 0.35);
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
 .image-item:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(126, 107, 143, 0.35);
+  z-index: 1;
+}
+
+.image-item:hover img {
+  transform: scale(1.08);
+}
+
+.image-item:hover::after {
+  opacity: 1;
 }
 
 
@@ -442,13 +642,16 @@ const formatTime = (timeString: string) => {
   gap: 2rem;
 }
 
+/* 卡片外壳：与首页统一 */
 .widget {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
+  border: 1px solid rgba(126, 107, 143, 0.2);
 }
 
+/* 个人简介：与首页统一的样式 */
 .author-card {
   text-align: center;
 }
@@ -457,36 +660,66 @@ const formatTime = (timeString: string) => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  overflow: hidden;
-  margin: 0 auto 1rem;
-  border: 3px solid #7E6B8F;
+  margin: 0 auto;
+  position: relative;
+  transition: transform 0.5s ease;
 }
 
 .author-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(126, 107, 143, 0.35);
+  transition: transform 0.6s ease;
+}
+
+/* 头像外圈旋转装饰环 */
+.author-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(126, 107, 143, 0.45);
+  animation: fb-spin 18s linear infinite;
+  pointer-events: none;
+}
+
+.author-card:hover .author-avatar {
+  transform: scale(1.06);
+}
+
+.author-card:hover .author-avatar img {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .author-name {
   font-size: 1.3rem;
-  color: #2c3e50;
+  color: #7E6B8F;
   margin-bottom: 0.5rem;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .author-bio {
   color: #666;
   margin-bottom: 1.5rem;
   font-style: italic;
+  border-left: 3px solid #7E6B8F;
+  padding-left: 10px;
 }
 
 .author-stats {
   display: flex;
-  justify-content: space-around; /* 均等分 */
+  justify-content: space-around;
+  margin-bottom: 1.5rem;
 }
 
 .stat-item {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .stat-number {
@@ -494,6 +727,7 @@ const formatTime = (timeString: string) => {
   font-size: 1.5rem;
   font-weight: bold;
   color: #7E6B8F;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .stat-label {
@@ -516,12 +750,22 @@ const formatTime = (timeString: string) => {
   border-radius: 8px;
   text-align: center;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .social-link:hover {
   background: #7E6B8F;
   color: white;
   border-color: #7E6B8F;
+  transform: translateY(-2px);
+}
+
+.social-icon {
+  font-size: 1.2rem;
 }
 
 
@@ -538,6 +782,16 @@ const formatTime = (timeString: string) => {
   justify-content: center;
   z-index: 9999;
   backdrop-filter: blur(5px); /* 模糊效果 */
+  animation: viewer-fade-in 0.3s ease;
+}
+
+@keyframes viewer-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .viewer-content {
@@ -547,6 +801,18 @@ const formatTime = (timeString: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: viewer-zoom-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes viewer-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .viewer-content img {
@@ -625,7 +891,26 @@ const formatTime = (timeString: string) => {
 
   .banner p {
     font-size: 1.6rem;
-    width: calc(1.6rem * 13.3);
+    animation: typingLoop 5.5s steps(13, end) infinite;
+  }
+
+  /* 个人简介响应式（与首页一致） */
+  .author-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .social-links {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .social-link {
+    flex: 1;
+    min-width: 80px;
+    padding: 0.6rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -642,23 +927,7 @@ const formatTime = (timeString: string) => {
 
   .banner p {
     font-size: 1.4rem;
-    width: calc(1.4rem * 13.3);
-    animation: typingLoop 7s steps(13, end) infinite;
-  }
-
-  @keyframes typingLoop {
-    0% {
-      width: 0;
-    }
-    40% {
-      width: calc(1.4rem * 13.3);
-    }
-    60% {
-      width: calc(1.4rem * 13.3);
-    }
-    100% {
-      width: 0;
-    }
+    animation: typingLoop 5s steps(13, end) infinite;
   }
 
   .life-content {
@@ -712,24 +981,7 @@ const formatTime = (timeString: string) => {
 
   .banner p {
     font-size: 1.2rem;
-    width: calc(1.2rem * 13.3);
-    border-right: 3px solid rgba(255, 255, 255, 0.75);
-    animation: typingLoop 6s steps(13, end) infinite;
-  }
-
-  @keyframes typingLoop {
-    0% {
-      width: 0;
-    }
-    40% {
-      width: calc(1.2rem * 13.3);
-    }
-    60% {
-      width: calc(1.2rem * 13.3);
-    }
-    100% {
-      width: 0;
-    }
+    animation: typingLoop 4.5s steps(13, end) infinite;
   }
 
   .life-content {
@@ -805,23 +1057,8 @@ const formatTime = (timeString: string) => {
 
   .banner p {
     font-size: 1rem;
-    width: calc(1rem * 13.3);
     min-height: 2rem;
-  }
-
-  @keyframes typingLoop {
-    0% {
-      width: 0;
-    }
-    40% {
-      width: calc(1rem * 13.3);
-    }
-    60% {
-      width: calc(1rem * 13.3);
-    }
-    100% {
-      width: 0;
-    }
+    animation: typingLoop 4s steps(13, end) infinite;
   }
 
   .widget {

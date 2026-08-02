@@ -5,6 +5,9 @@
     <div class="app-main">
     <!--   横幅-->
     <div class="banner">
+      <!-- 光晕背景 -->
+      <div class="glow glow-1"></div>
+      <div class="glow glow-2"></div>
       <!-- 国风背景元素 -->
       <div class="chinese-bg-elements">
         <div class="mountain-left"></div>
@@ -17,9 +20,23 @@
       </div>
 
       <div class="banner-content">
-        <h1>烈焰飞鸟的个人博客</h1>
+        <h1 class="banner-title">烈焰飞鸟的个人博客</h1>
         <p class="typing-text">不负青春 不负韶华</p>
         <div class="chinese-border"></div>
+        <div class="banner-buttons">
+          <button class="banner-btn banner-btn-primary" @click="scrollToArticles">
+            ✦ 阅读文章
+          </button>
+          <button class="banner-btn banner-btn-ghost" @click="goToAbout">
+            了解笔者
+          </button>
+        </div>
+      </div>
+
+      <!-- 滚动提示 -->
+      <div class="scroll-hint" @click="scrollToArticles">
+        <span class="mouse"><span class="wheel"></span></span>
+        <span class="hint-text">向下滚动</span>
       </div>
     </div>
     <!--    内容-->
@@ -27,7 +44,7 @@
       <div class="container">
         <!--        左侧主要内容-->
         <div class="main-content">
-          <section class="section animate-on-scroll">
+          <section class="section">
             <div class="section-header">
               <div class="chinese-icon">
                 <svg viewBox="0 0 24 24" width="24" height="24">
@@ -38,10 +55,12 @@
             </div>
             <div class="articles-list">
               <article
-                  class="article-item animate-on-scroll"
+                  class="article-item"
                   v-for="article in recentArticles"
                   :key="article.id"
                   @click="goToArticle(article.id)"
+                  @mousemove="handleCardMove"
+                  @mouseleave="handleCardLeave"
               >
                 <!-- 文章封面 -->
                 <div class="article-cover">
@@ -98,15 +117,15 @@
               <p class="author-bio">追求·奋斗·拼搏·热爱</p>
               <div class="author-stats">
                 <div class="stat-item">
-                  <span class="stat-number">{{ total }}</span>
+                  <span class="stat-number">{{ totalCount.value }}</span>
                   <span class="stat-label">文章</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number">8</span>
+                  <span class="stat-number">{{ tagCount.value }}</span>
                   <span class="stat-label">标签</span>
                 </div>
                 <div class="stat-item">
-                  <span class="stat-number">4</span>
+                  <span class="stat-number">{{ categoryCount.value }}</span>
                   <span class="stat-label">分类</span>
                 </div>
 
@@ -121,14 +140,16 @@
             </div>
           </section>
 
-          <!-- 新增：国风名言组件 -->
+          <!-- 国风名言轮播 -->
           <section class="widget chinese-quote">
-            <div class="quote-content">
-              <div class="quote-icon">「</div>
-              <p class="quote-text">博观而约取，厚积而薄发</p>
-              <div class="quote-icon">」</div>
-              <p class="quote-author">—— 苏轼</p>
-            </div>
+            <transition name="quote-fade" mode="out-in">
+              <div class="quote-content" :key="currentQuoteIndex">
+                <div class="quote-icon">「</div>
+                <p class="quote-text">{{ quotes[currentQuoteIndex].text }}</p>
+                <div class="quote-icon">」</div>
+                <p class="quote-author">—— {{ quotes[currentQuoteIndex].author }}</p>
+              </div>
+            </transition>
           </section>
         </div>
       </div>
@@ -148,10 +169,9 @@ import {useRouter} from 'vue-router'
 import Header from '@/components/Header.vue'
 import {getAllArticles} from '@/data/articles.ts'
 import type {Article} from '@/types/article'
-import {useScrollAnimation} from "@/utils/animations.ts";
+import {useCountUp} from "@/utils/animations.ts";
 
 const router = useRouter()
-const {initScrollAnimation, destroy} = useScrollAnimation()
 
 // 获取 base 路径（GitHub Pages 需要 /FireBird/）
 const baseUrl = import.meta.env.BASE_URL
@@ -179,22 +199,72 @@ const getImageUrl = (path: string | undefined) => {
 
 // 响应式数据
 const recentArticles = ref<Article[]>([])
-let total = ref(0)
+
+// 统计数字滚动动画
+const totalCount = useCountUp(0)
+const tagCount = useCountUp(8)
+const categoryCount = useCountUp(4)
+
+// 国风名言轮播
+const quotes = [
+  {text: '博观而约取，厚积而薄发', author: '苏轼'},
+  {text: '路漫漫其修远兮，吾将上下而求索', author: '屈原'},
+  {text: '不积跬步，无以至千里', author: '荀子'},
+  {text: '长风破浪会有时，直挂云帆济沧海', author: '李白'},
+  {text: '纸上得来终觉浅，绝知此事要躬行', author: '陆游'},
+]
+const currentQuoteIndex = ref(0)
+let quoteTimer: ReturnType<typeof setInterval> | undefined
+
+const nextQuote = () => {
+  currentQuoteIndex.value = (currentQuoteIndex.value + 1) % quotes.length
+}
+
+// 文章卡片鼠标跟随光斑
+const handleCardMove = (event: MouseEvent) => {
+  const card = event.currentTarget as HTMLElement
+  const rect = card.getBoundingClientRect()
+  card.style.setProperty('--mx', `${event.clientX - rect.left}px`)
+  card.style.setProperty('--my', `${event.clientY - rect.top}px`)
+}
+
+const handleCardLeave = (event: MouseEvent) => {
+  const card = event.currentTarget as HTMLElement
+  card.style.removeProperty('--mx')
+  card.style.removeProperty('--my')
+}
+
+// 滚动到文章列表
+const scrollToArticles = () => {
+  const main = document.querySelector<HTMLElement>('.app-main')
+  const target = document.querySelector<HTMLElement>('.articles-list')
+  if (main && target) {
+    const top = target.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - 20
+    main.scrollTo({top, behavior: 'smooth'})
+  }
+}
+
+// 跳转到关于页
+const goToAbout = () => {
+  router.push('/about')
+}
 
 // 初始化数据
 onMounted(() => {
   const articlesData = getAllArticles()
   recentArticles.value = articlesData.articles
-  total.value = articlesData.total
+  totalCount.setTarget(articlesData.total)
+  tagCount.start()
+  categoryCount.start()
 
-  // 添加滚动动画 - 使用异步确保数据渲染完成
-  setTimeout(() => {
-    initScrollAnimation()
-  }, 200)
+  // 名言轮播定时器
+  quoteTimer = setInterval(nextQuote, 4500)
 })
 
 onUnmounted(() => {
-  destroy()
+  if (quoteTimer) {
+    clearInterval(quoteTimer)
+  }
 })
 
 // 跳转到文章详情
@@ -231,8 +301,40 @@ const formatDate = (dateString: string) => {
   overflow: hidden;
   background: linear-gradient(
       135deg,
-      rgba(110, 95, 125, 0.4) 0%, /* 深紫色变体 */ rgba(126, 107, 143, 0.3) 50%, /* 主色调 #7E6B8F */ rgba(150, 135, 165, 0.2) 100% /* 浅紫色变体 */
+      rgba(110, 95, 125, 0.55) 0%,
+      rgba(126, 107, 143, 0.4) 30%,
+      rgba(150, 135, 165, 0.3) 65%,
+      rgba(126, 107, 143, 0.5) 100%
   );
+  background-size: 300% 300%;
+  animation: fb-gradient-flow 16s ease infinite;
+}
+
+/* 光晕背景 */
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glow-1 {
+  width: 440px;
+  height: 440px;
+  top: -140px;
+  left: -100px;
+  background: rgba(196, 181, 214, 0.35);
+  animation: fb-breathe 7s ease-in-out infinite;
+}
+
+.glow-2 {
+  width: 380px;
+  height: 380px;
+  bottom: -120px;
+  right: -80px;
+  background: rgba(155, 138, 174, 0.3);
+  animation: fb-breathe 9s ease-in-out 2s infinite;
 }
 
 /* 国风背景元素 */
@@ -339,6 +441,12 @@ const formatDate = (dateString: string) => {
   letter-spacing: 3px;
 }
 
+/* Banner 标题入场动画 */
+.banner-title {
+  opacity: 0;
+  animation: fb-fade-up 1s ease 0.2s forwards;
+}
+
 .typing-text {
   font-size: 1.8rem;
   min-height: 2.5rem;
@@ -347,7 +455,7 @@ const formatDate = (dateString: string) => {
   white-space: nowrap;
   width: 240px;
   margin: 1.5rem auto 0;
-  animation: typing 3.5s steps(7, end), blink-caret 0.75s step-end infinite;
+  animation: typing 3.5s steps(7, end) 0.6s both, blink-caret 0.75s step-end 0.6s infinite;
   font-family: "STKaiti", "KaiTi", serif;
   color: rgba(255, 255, 255, 0.95);
 }
@@ -358,6 +466,124 @@ const formatDate = (dateString: string) => {
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.9), transparent);
   margin: 2rem auto 0;
   position: relative;
+  opacity: 0;
+  animation: fb-fade-up 0.9s ease 1s forwards;
+}
+
+/* Banner 操作按钮 */
+.banner-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 2.5rem;
+  opacity: 0;
+  animation: fb-fade-up 0.9s ease 1.3s forwards;
+}
+
+.banner-btn {
+  padding: 0.75rem 2rem;
+  font-size: 1.05rem;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: "STKaiti", "KaiTi", serif;
+  letter-spacing: 2px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-btn-primary {
+  background: rgba(255, 255, 255, 0.94);
+  color: #7E6B8F;
+  border: none;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+}
+
+.banner-btn-primary:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 26px rgba(240, 230, 255, 0.4);
+  background: #FFFFFF;
+}
+
+.banner-btn-primary:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.banner-btn-ghost {
+  background: transparent;
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+}
+
+.banner-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+  border-color: #FFFFFF;
+  box-shadow: 0 8px 22px rgba(240, 230, 255, 0.25);
+}
+
+.banner-btn-ghost:active {
+  transform: translateY(-1px);
+}
+
+/* 滚动提示 */
+.scroll-hint {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+  cursor: pointer;
+  opacity: 0;
+  animation: fb-fade-in 1s ease 2s forwards;
+  transition: transform 0.3s ease;
+}
+
+.scroll-hint:hover {
+  transform: translateX(-50%) translateY(4px);
+}
+
+.mouse {
+  width: 26px;
+  height: 42px;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.wheel {
+  width: 4px;
+  height: 8px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.9);
+  animation: wheel-scroll 1.6s ease-in-out infinite;
+}
+
+@keyframes wheel-scroll {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+.hint-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  letter-spacing: 3px;
 }
 
 .chinese-border::before,
@@ -470,8 +696,8 @@ const formatDate = (dateString: string) => {
 }
 
 .article-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 30px rgba(126, 107, 143, 0.25);
+  transform: translateY(-8px);
+  box-shadow: 0 14px 36px rgba(126, 107, 143, 0.3);
   border-color: #7E6B8F;
 }
 
@@ -482,6 +708,35 @@ const formatDate = (dateString: string) => {
   justify-content: center;
   overflow: hidden;
   background: rgba(245, 245, 245, 0.8);
+}
+
+/* 封面渐变遮罩（hover 浮现） */
+.article-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(126, 107, 143, 0.5), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 封面鼠标跟随光斑 */
+.article-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(196, 181, 214, 0.45), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.article-item:hover .article-cover::before,
+.article-item:hover .article-cover::after {
+  opacity: 1;
 }
 
 .chinese-corner {
@@ -652,15 +907,38 @@ const formatDate = (dateString: string) => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.95);
   margin: 0 auto;
+  position: relative;
+  transition: transform 0.5s ease;
 }
 
 .author-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 14px rgba(126, 107, 143, 0.35);
+  transition: transform 0.6s ease;
+}
+
+/* 头像外圈旋转装饰环 */
+.author-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(126, 107, 143, 0.45);
+  animation: fb-spin 18s linear infinite;
+  pointer-events: none;
+}
+
+.author-card:hover .author-avatar {
+  transform: scale(1.06);
+}
+
+.author-card:hover .author-avatar img {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .author-name {
@@ -749,6 +1027,22 @@ const formatDate = (dateString: string) => {
   border-left: 5px solid #7E6B8F;
 }
 
+/* 名言轮播过渡 */
+.quote-fade-enter-active,
+.quote-fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.quote-fade-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.quote-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
 .quote-content {
   text-align: center;
 }
@@ -792,22 +1086,7 @@ const formatDate = (dateString: string) => {
   clip-path: ellipse(50% 100% at 50% 100%);
 }
 
-/* 滚动动画样式 */
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.9s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.animate-on-scroll.animate-out {
-  opacity: 0;
-  transform: translateY(30px);
-}
+/* 滚动动画样式（已全局统一至 global.css） */
 
 /* 响应式样式 */
 @media (max-width: 1024px) {
@@ -886,6 +1165,21 @@ const formatDate = (dateString: string) => {
   .banner h1 {
     font-size: 2rem;
     margin-bottom: 1rem;
+  }
+
+  .banner-buttons {
+    margin-top: 1.5rem;
+    gap: 0.8rem;
+  }
+
+  .banner-btn {
+    padding: 0.55rem 1.4rem;
+    font-size: 0.95rem;
+  }
+
+  /* 小屏隐藏滚动提示，避免拥挤 */
+  .scroll-hint {
+    display: none;
   }
 
   .banner p {

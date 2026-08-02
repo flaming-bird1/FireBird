@@ -64,3 +64,35 @@ export const useScrollAnimation = () => {
         destroy
     }
 }
+
+/**
+ * 数字滚动动画：从 0 平滑滚动到目标值（easeOutCubic）
+ * 用法：const { value, start, setTarget } = useCountUp(100)
+ */
+export const useCountUp = (target: number, duration = 1400) => {
+    const value = ref(0)
+    let targetValue = target
+
+    const start = () => {
+        const startTime = performance.now()
+        const tick = (now: number) => {
+            const elapsed = now - startTime
+            const progress = Math.min(1, elapsed / duration)
+            // easeOutCubic 缓动
+            const eased = 1 - Math.pow(1 - progress, 3)
+            value.value = Math.round(targetValue * eased)
+            if (progress < 1) {
+                requestAnimationFrame(tick)
+            }
+        }
+        requestAnimationFrame(tick)
+    }
+
+    // 动态更新目标值并重新播放动画
+    const setTarget = (t: number) => {
+        targetValue = t
+        start()
+    }
+
+    return { value, start, setTarget }
+}

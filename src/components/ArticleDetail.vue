@@ -57,8 +57,23 @@
           <!-- 文章底部 -->
           <div class="article-footer">
             <div class="action-buttons">
-              <button class="like-button" @click="likeArticle">👍 点赞</button>
+              <button class="like-button" :class="{ liked: isLiked }" @click="likeArticle">
+                {{ isLiked ? '💜 已点赞' : '👍 点赞' }}
+              </button>
               <button class="share-button" @click="shareArticle">🔗 分享</button>
+            </div>
+            <!-- 点赞爱心飞出层 -->
+            <div class="like-burst" v-if="burstHearts.length > 0">
+              <span
+                  v-for="heart in burstHearts"
+                  :key="heart.id"
+                  class="burst-heart"
+                  :style="{
+                    left: heart.left + '%',
+                    animationDelay: heart.delay + 'ms',
+                    fontSize: heart.size + 'px',
+                  }"
+              >{{ heart.symbol }}</span>
             </div>
           </div>
         </div>
@@ -98,11 +113,8 @@
           </section>
 
           <!-- 文章目录 -->
-          <section class="widget" v-if="headings.length > 0">
-            <div
-                class="toc-container"
-                :class="{fixed: isTocFixed}"
-            >
+          <section class="widget toc-widget" v-if="headings.length > 0">
+            <div class="toc-container">
               <h3 class="toc-title">📑 文章目录</h3>
               <nav class="toc-nav">
                 <ul class="toc-list">
@@ -132,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, onUnmounted, nextTick} from 'vue'
+import {ref, onMounted, onUnmounted} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Header from './Header.vue'
 import MarkdownViewer from '@/components/MarkdownViewer.vue'
@@ -150,24 +162,11 @@ const baseUrl = import.meta.env.BASE_URL
 const article = ref<Article | null>(null)
 const headings = ref<Array<{id: string, text: string, level: number}>>([])
 const activeHeadingId = ref<string>('')
-// 控制目录固定
-const isTocFixed = ref(false)
-const tocOffsetTop = ref(0)
 const total = ref(0)
 // 主体滚动容器引用
 const mainRef = ref<HTMLElement | null>(null)
 
-// 计算目录的初始位置
-const calculateTocPosition = () => {
-  const tocElement = document.querySelector('.toc-container') as HTMLElement
-  const container = mainRef.value
-  if (tocElement && container) {
-    const rect = tocElement.getBoundingClientRect()
-    tocOffsetTop.value = rect.top - container.getBoundingClientRect().top + container.scrollTop
-  }
-}
-
-// 修改滚动处理函数
+// 滚动处理：高亮当前激活的目录项
 const handleScroll = () => {
   if (headings.value.length === 0) return
   const container = mainRef.value
@@ -190,13 +189,6 @@ const handleScroll = () => {
   if (currentActiveId) {
     activeHeadingId.value = currentActiveId
   }
-
-  // 处理目录固定
-  const scrollY = container.scrollTop
-  const headerHeight = 67 // Header的高度
-  const fixedThreshold = tocOffsetTop.value - headerHeight - 20
-
-  isTocFixed.value = scrollY > fixedThreshold
 }
 
 // 获取文件路径（添加 base 路径）
@@ -261,9 +253,28 @@ const formatDate = (dateString?: string) => {
   })
 }
 
-// 点赞文章
+// 点赞文章（带爱心飞出效果）
+const isLiked = ref(false)
+const burstHearts = ref<Array<{id: number, left: number, delay: number, size: number, symbol: string}>>([])
+let heartId = 0
+
 const likeArticle = () => {
+  isLiked.value = !isLiked.value
   console.log('点赞文章:', article.value?.id)
+
+  // 生成飞出的爱心
+  const symbols = ['❤', '💜', '✨', '💖', '⭐']
+  const hearts = Array.from({length: 8}, () => ({
+    id: heartId++,
+    left: 30 + Math.random() * 40,
+    delay: Math.random() * 180,
+    size: 14 + Math.random() * 14,
+    symbol: symbols[Math.floor(Math.random() * symbols.length)],
+  }))
+  burstHearts.value = hearts
+  setTimeout(() => {
+    burstHearts.value = []
+  }, 1500)
 }
 
 // 分享文章
@@ -276,22 +287,11 @@ onMounted(() => {
   loadArticle()
   total.value = getAllArticles().total
   mainRef.value?.addEventListener('scroll', handleScroll)
-
-  // 在下一个tick计算位置，确保DOM已渲染
-  nextTick(() => {
-    setTimeout(() => {
-      calculateTocPosition()
-    }, 100)
-  })
-
-  // 监听窗口大小变化，重新计算位置
-  window.addEventListener('resize', calculateTocPosition)
 })
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
   mainRef.value?.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('resize', calculateTocPosition)
 })
 </script>
 
@@ -312,7 +312,7 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 3rem;
-  align-items: start;
+  /* 默认 stretch：让侧边栏与文章列等高，目录 sticky 才有足够空间吸顶 */
 }
 
 /* 左侧文章内容样式 */
@@ -410,17 +410,61 @@ onUnmounted(() => {
   color: white;
   border: none;
   padding: 0.8rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
   font-weight: 500;
+  position: relative;
+  overflow: hidden;
 }
 
 .like-button:hover, .share-button:hover {
-  background: #6D8B74;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(126, 107, 143, 0.3);
+  background: #9D8DB0;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(126, 107, 143, 0.35);
+}
+
+.like-button:active, .share-button:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+/* 点赞后状态 */
+.like-button.liked {
+  background: linear-gradient(135deg, #e77fb0, #b06ab3);
+  box-shadow: 0 6px 18px rgba(231, 127, 176, 0.45);
+}
+
+/* 点赞爱心飞出 */
+.like-burst {
+  position: relative;
+  height: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.burst-heart {
+  position: absolute;
+  bottom: 24px;
+  animation: heart-float 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  color: #e77fb0;
+  text-shadow: 0 0 8px rgba(231, 127, 176, 0.6);
+  opacity: 0;
+}
+
+@keyframes heart-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(0, -16px) scale(1.15);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, -120px) scale(0.85);
+  }
 }
 
 /* 侧边栏样式 */
@@ -517,23 +561,15 @@ onUnmounted(() => {
   transform: translateY(-1px);
 }
 
-/* 目录样式 */
+/* 目录卡片：随滚动吸顶固定在 Header 下方 */
+.toc-widget {
+  position: sticky;
+  top: 90px;
+}
+
 .toc-container {
   max-height: 400px;
   overflow-y: auto;
-  position: sticky; /* 添加粘性定位 */
-  top: 90px; /* Header高度 + 一些间距 */
-  transition: all 0.3s ease; /* 添加过渡效果 */
-}
-/* 当目录固定时的样式 */
-.toc-container.fixed {
-  position: fixed; /* 添加固定定位 */
-  top: 87px; /* 固定时的顶部间距 */
-  max-height: calc(100vh - 107px); /* 视口高度减去顶部和底部间距 */
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  z-index: 100;
 }
 
 .toc-title {
@@ -611,6 +647,17 @@ onUnmounted(() => {
   background: rgba(126, 107, 143, 0.1);
   border-left-color: #7E6B8F;
   font-weight: 500;
+}
+
+/* 平板及以下：文章与侧边栏改为单列布局 */
+@media (max-width: 1024px) {
+  .article-container {
+    grid-template-columns: 1fr;
+  }
+
+  .toc-widget {
+    position: static; /* 小屏时目录不跟随滚动 */
+  }
 }
 
 </style>

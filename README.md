@@ -1,12 +1,25 @@
-# 🔥 烈焰飞鸟 · 个人博客 & 简历
+<div align="center" style="padding: 20px 0 10px;">
 
-<div align="center">
+# 烈焰飞鸟 · 个人博客 & 简历
 
-**本科 · 2027届 · 全栈开发 · AI应用探索者**
+<div style="font-size: 15px; color: #555; margin-bottom: 15px;">
+本科 · 2027届 · 全栈开发 · AI应用探索者
+</div>
+<div style="display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; font-size: 14px; color: #666;">
+  <span>12345678901</span>
+  <span style="color: #ccc;">|</span>
+  <span>12345678901@qq.com</span>
+  <span style="color: #ccc;">|</span>
+  <span>成都信息工程大学 · 空间信息与数字技术</span>
+</div>
 
-12345678901 | 12345678901@qq.com | 成都信息工程大学 · 空间信息与数字技术
 
-[个人网页](https://flaming-bird1.github.io/FireBird/#/) · [CSDN 博客](https://blog.csdn.net/lieyanfeiniao_) · [GitHub](https://github.com/flaming-bird1) · [Gitee](https://gitee.com/flaming-bird)
+<div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 10px;">
+  <a href="https://flaming-bird1.github.io/FireBird/#/" style="text-decoration: none; background: #4a6fa5; color: white; padding: 5px 16px; border-radius: 4px; font-size: 13px;">个人网页</a>
+  <a href="https://blog.csdn.net/lieyanfeiniao_" style="text-decoration: none; background: #7E6B8F; color: white; padding: 5px 16px; border-radius: 4px; font-size: 13px;">CSDN 博客</a>
+  <a href="https://github.com/flaming-bird1" style="text-decoration: none; background: #24292e; color: white; padding: 5px 16px; border-radius: 4px; font-size: 13px;">GitHub</a>
+  <a href="https://gitee.com/flaming-bird" style="text-decoration: none; background: #c71d23; color: white; padding: 5px 16px; border-radius: 4px; font-size: 13px;">Gitee</a>
+</div>
 
 </div>
 

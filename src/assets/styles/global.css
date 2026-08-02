@@ -122,3 +122,141 @@ ul {
         margin-top: 56px;
     }
 }
+
+/* ========== 公共动效 keyframes ========== */
+/* 淡入上浮 */
+@keyframes fb-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 淡入 */
+@keyframes fb-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 缓慢呼吸（光晕/发光元素） */
+@keyframes fb-breathe {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.55;
+    }
+    50% {
+        transform: scale(1.12);
+        opacity: 0.85;
+    }
+}
+
+/* 渐变背景缓慢流动 */
+@keyframes fb-gradient-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* 上下浮动 */
+@keyframes fb-float-y {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* 旋转 */
+@keyframes fb-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 波纹扩散 */
+@keyframes fb-ripple {
+    0% {
+        transform: scale(0);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+/* 光晕扫过（文本/卡片高光） */
+@keyframes fb-shine {
+    from {
+        transform: translateX(-120%) skewX(-20deg);
+    }
+    to {
+        transform: translateX(220%) skewX(-20deg);
+    }
+}
+
+/* ========== 公共 hover 微交互类 ========== */
+/* 卡片悬浮上浮 */
+.fb-card-hover {
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.fb-card-hover:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 34px rgba(126, 107, 143, 0.28);
+}
+
+/* ========== 滚动入场动画（配合 animations.ts 的 IntersectionObserver） ========== */
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    will-change: opacity, transform;
+}
+
+.animate-on-scroll.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.animate-on-scroll.animate-out {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* 渐变主题文字 */
+.fb-text-gradient {
+    background: linear-gradient(120deg, #7E6B8F 0%, #a58fb9 40%, #7E6B8F 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fb-gradient-flow 6s ease infinite;
+}
+
+/* 减少动效偏好支持：关闭全局呼吸/漂浮等循环动画 */
+@media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll {
+        transition: none;
+        opacity: 1;
+        transform: none;
+    }
+}

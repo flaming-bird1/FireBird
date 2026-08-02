@@ -48,32 +48,38 @@
           <!-- 自定义导航栏，替代 el-tabs -->
           <div class="nav-tabs-wrapper">
             <div class="tabs-header">
+              <!-- 滑动指示条 -->
+              <div class="tab-indicator" :style="indicatorStyle"></div>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'education' }"
-                  @click="activeTab = 'education'"
+                  @click="activeTab = 'education'; moveIndicator(0)"
               >
                 🎓 教育背景
               </button>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'skills' }"
-                  @click="activeTab = 'skills'"
+                  @click="activeTab = 'skills'; moveIndicator(1)"
               >
                 💻 技能专长
               </button>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'projects' }"
-                  @click="activeTab = 'projects'"
+                  @click="activeTab = 'projects'; moveIndicator(2)"
               >
                 🚀 项目经验
                 <span class="tab-count">{{ resumeProjects.length }}</span>
               </button>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'honors' }"
-                  @click="activeTab = 'honors'"
+                  @click="activeTab = 'honors'; moveIndicator(3)"
               >
                 🏆 荣誉奖项
               </button>
@@ -362,7 +368,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
 import Header from "@/components/Header.vue";
 import {
@@ -381,6 +387,33 @@ const resumeHonors = ref<ResumeHonor[]>(getResumeHonors())
 const resumeProjects = ref<ResumeProject[]>(getResumeProjects())
 
 const activeTab = ref('education')
+
+// ====== Tab 滑动指示条 ======
+const tabBtns = ref<HTMLButtonElement[]>([])
+const indicatorStyle = ref({ width: '0px', transform: 'translateX(0px)' })
+
+const moveIndicator = (index: number) => {
+  const btn = tabBtns.value[index]
+  if (!btn) return
+  indicatorStyle.value = {
+    width: `${btn.offsetWidth}px`,
+    transform: `translateX(${btn.offsetLeft}px)`,
+  }
+}
+
+let resizeHandler: () => void = () => {
+  const index = ['education', 'skills', 'projects', 'honors'].indexOf(activeTab.value)
+  moveIndicator(Math.max(0, index))
+}
+
+onMounted(() => {
+  resizeHandler()
+  window.addEventListener('resize', resizeHandler)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeHandler)
+})
 
 // 荣誉奖项分类
 const activeHonorCategory = ref('all')
@@ -654,6 +687,20 @@ const renderMarkdown = (content: string) => {
   background: #f8f6fa;
   flex-wrap: wrap;
   flex-shrink: 0;
+  position: relative;
+}
+
+/* Tab 滑动指示条 */
+.tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7E6B8F, #9D8DB0);
+  box-shadow: 0 0 8px rgba(126, 107, 143, 0.5);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .tab-btn {
@@ -704,14 +751,8 @@ const renderMarkdown = (content: string) => {
   background: white;
 }
 
-.tab-btn.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #7e6b8f;
+.tab-btn:active {
+  transform: scale(0.98);
 }
 
 .tab-content-wrapper {
@@ -746,12 +787,13 @@ const renderMarkdown = (content: string) => {
   padding-right: 4px;
 }
 
-/* 右侧卡片通用样式 */
+/* 右侧卡片通用样式（与首页统一） */
 .widget {
-  background: white;
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(126, 107, 143, 0.15);
+  border: 1px solid rgba(126, 107, 143, 0.2);
 }
 
 /* 个人简介卡片 */
@@ -759,28 +801,52 @@ const renderMarkdown = (content: string) => {
   flex-shrink: 0;
 }
 
+/* 个人简介：与首页统一的样式 */
 .author-card {
   text-align: center;
 }
 
 .author-avatar {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 4px solid #7e6b8f;
-  margin: 0 auto 1rem;
+  margin: 0 auto;
+  position: relative;
+  transition: transform 0.5s ease;
 
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 14px rgba(126, 107, 143, 0.35);
+    transition: transform 0.6s ease;
+  }
+
+  /* 头像外圈旋转装饰环 */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px dashed rgba(126, 107, 143, 0.45);
+    animation: fb-spin 18s linear infinite;
+    pointer-events: none;
+  }
+}
+
+.author-card:hover .author-avatar {
+  transform: scale(1.06);
+
+  img {
+    transform: scale(1.1) rotate(5deg);
   }
 }
 
 .author-name {
-  font-size: 1.5rem;
-  color: #2c3e50;
+  font-size: 1.3rem;
+  color: #7E6B8F;
   margin-bottom: 0.5rem;
   font-family: "STKaiti", "KaiTi", serif;
 }
@@ -789,7 +855,7 @@ const renderMarkdown = (content: string) => {
   color: #666;
   margin-bottom: 1.5rem;
   font-style: italic;
-  border-left: 3px solid #7e6b8f;
+  border-left: 3px solid #7E6B8F;
   padding-left: 10px;
 }
 
@@ -810,12 +876,12 @@ const renderMarkdown = (content: string) => {
   display: block;
   font-size: 1.5rem;
   font-weight: bold;
-  color: #7e6b8f;
+  color: #7E6B8F;
   font-family: "STKaiti", "KaiTi", serif;
 }
 
 .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #666;
 }
 
@@ -832,17 +898,17 @@ const renderMarkdown = (content: string) => {
   justify-content: center;
   gap: 8px;
   padding: 0.8rem;
-  background: rgba(126, 107, 143, 0.05);
-  border: 1px solid rgba(126, 107, 143, 0.2);
-  border-radius: 10px;
-  color: #7e6b8f;
+  border: 1px solid rgba(126, 107, 143, 0.3);
+  border-radius: 8px;
+  color: #7E6B8F;
   text-decoration: none;
   transition: all 0.3s ease;
   font-family: "STKaiti", "KaiTi", serif;
 
   &:hover {
-    background: #7e6b8f;
+    background: #7E6B8F;
     color: white;
+    border-color: #7E6B8F;
     transform: translateY(-2px);
   }
 }

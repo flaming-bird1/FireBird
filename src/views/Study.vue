@@ -20,18 +20,22 @@
           <div class="nav-tabs-wrapper">
             <!-- 顶部导航栏 -->
             <div class="tabs-header">
+              <!-- 滑动指示条 -->
+              <div class="tab-indicator" :style="indicatorStyle"></div>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'daily' }"
-                  @click="activeTab = 'daily'"
+                  @click="activeTab = 'daily'; moveIndicator(0)"
               >
                 📅 每日记录
                 <span class="tab-count">{{ dailyRecords.length }}</span>
               </button>
               <button
+                  ref="tabBtns"
                   class="tab-btn"
                   :class="{ active: activeTab === 'weekly' }"
-                  @click="activeTab = 'weekly'"
+                  @click="activeTab = 'weekly'; moveIndicator(1)"
               >
                 📊 每周总结
                 <span class="tab-count">{{ weeklySummaries.length }}</span>
@@ -272,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue'
+import {computed, ref, watch, onMounted, onUnmounted} from 'vue'
 import Header from '@/components/Header.vue'
 import {getDailyRecords, getWeeklySummaries} from '@/data/study'
 import type {DailyRecord, WeeklySummary} from '@/types/study'
@@ -283,6 +287,33 @@ const weeklySummaries = ref<WeeklySummary[]>(getWeeklySummaries())
 
 // 当前选中的标签页
 const activeTab = ref('daily')
+
+// ====== Tab 滑动指示条 ======
+const tabBtns = ref<HTMLButtonElement[]>([])
+const indicatorStyle = ref({ width: '0px', transform: 'translateX(0px)' })
+
+const moveIndicator = (index: number) => {
+  const btn = tabBtns.value[index]
+  if (!btn) return
+  indicatorStyle.value = {
+    width: `${btn.offsetWidth}px`,
+    transform: `translateX(${btn.offsetLeft}px)`,
+  }
+}
+
+let resizeHandler: () => void = () => {
+  const index = ['daily', 'weekly'].indexOf(activeTab.value)
+  moveIndicator(Math.max(0, index))
+}
+
+onMounted(() => {
+  resizeHandler()
+  window.addEventListener('resize', resizeHandler)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeHandler)
+})
 
 // 每日记录搜索
 const searchKeyword = ref('')
@@ -550,6 +581,20 @@ const getParagraphs = (text: string) => {
   background: #f8f6fa;
   flex-wrap: wrap;
   flex-shrink: 0;
+  position: relative;
+}
+
+/* Tab 滑动指示条 */
+.tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #7E6B8F, #9D8DB0);
+  box-shadow: 0 0 8px rgba(126, 107, 143, 0.5);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .tab-btn {
@@ -579,14 +624,8 @@ const getParagraphs = (text: string) => {
     background: white;
   }
 
-  &.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: #7e6b8f;
+  &:active {
+    transform: scale(0.98);
   }
 }
 

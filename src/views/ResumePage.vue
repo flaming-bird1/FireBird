@@ -15,7 +15,7 @@
     <div class="resume-content">
       <div class="container">
         <div class="markdown-card">
-          <MarkdownViewer :file-path="resumePath" />
+          <MarkdownViewer :markdown-content="readmeContent" />
         </div>
       </div>
     </div>
@@ -24,12 +24,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import Header from "@/components/Header.vue";
 import MarkdownViewer from "@/components/MarkdownViewer.vue";
 
-// 动态拼接 base 路径，兼容 GitHub Pages 部署（/FireBird/）和本地开发
-const resumePath = computed(() => `${import.meta.env.BASE_URL}articles/resume.md`)
+// 直接引用项目根目录 README.md（构建时由 Vite 以原文打包，部署不依赖 public 目录）
+import readmeContent from "../../README.md?raw";
 </script>
 
 <style scoped lang="scss">
