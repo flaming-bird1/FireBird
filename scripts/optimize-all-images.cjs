@@ -10,18 +10,13 @@ const CONFIG = {
     maxWidth: 1200,           // 最大宽度
     maxHeight: 800,           // 最大高度
     quality: 75,              // 质量（75%）
-    skipExisting: false,      // 是否跳过已优化的文件（基于文件名）
-    backup: true,             // 是否备份原文件
 };
 
-// 要优化的目录
-const DIRECTORIES = [
-    'public/assets/icon',
-    'public/images/article_cover',
-    'public/images/life',
-    'public/images',
-    'src/assets/images',
-];
+// 要扫描的根目录（递归扫描其中所有图片）
+const ROOT_DIRS = ['public', 'src'];
+
+// 跳过的目录
+const EXCLUDE_DIRS = ['node_modules', 'dist', '.git', '.idea', '.vscode', 'scripts'];
 
 // 支持的图片格式
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp'];
@@ -96,27 +91,15 @@ async function processDirectory(dirPath) {
             const stat = fs.statSync(itemPath);
 
             if (stat.isDirectory()) {
+                // 跳过无需处理的目录
+                if (EXCLUDE_DIRS.includes(item)) {
+                    continue;
+                }
                 await scan(itemPath);
             } else {
                 const ext = path.extname(item).toLowerCase();
 
                 if (IMAGE_EXTENSIONS.includes(ext)) {
-                    // 检查是否已优化（文件名包含_optimized）
-                    if (CONFIG.skipExisting && item.includes('_optimized')) {
-                        console.log(`  ⏭️  跳过已优化: ${item}`);
-                        skipped++;
-                        continue;
-                    }
-
-                    // 备份原文件
-                    let backupPath = null;
-                    if (CONFIG.backup) {
-                        backupPath = itemPath + '.backup';
-                        if (!fs.existsSync(backupPath)) {
-                            fs.copyFileSync(itemPath, backupPath);
-                        }
-                    }
-
                     // 创建临时输出路径
                     const tempPath = itemPath + '.temp';
 
@@ -124,7 +107,15 @@ async function processDirectory(dirPath) {
                     const result = await compressImage(itemPath, tempPath);
 
                     if (result.success) {
-                        // 替换原文件
+                        if (result.compressedSize >= result.originalSize) {
+                            // 压缩后未变小，保留原文件
+                            fs.unlinkSync(tempPath);
+                            console.log(`    ⏭️  跳过（无法再压缩）: ${item}`);
+                            skipped++;
+                            continue;
+                        }
+
+                        // 直接覆盖原文件（不保留备份）
                         fs.unlinkSync(itemPath);
                         fs.renameSync(tempPath, itemPath);
 
@@ -160,7 +151,7 @@ async function main() {
     let totalFailed = 0;
     let totalSavedKB = 0;
 
-    for (const dir of DIRECTORIES) {
+    for (const dir of ROOT_DIRS) {
         const result = await processDirectory(dir);
         totalProcessed += result.processed;
         totalSkipped += result.skipped;
@@ -176,9 +167,10 @@ async function main() {
     console.log(`  失败: ${totalFailed} 张`);
     console.log(`  总共节省: ${(totalSavedKB / 1024).toFixed(2)} MB`);
     console.log(`\n💡 建议:`);
-    console.log(`  1. 运行 npm run build 重新构建`);
-    console.log(`  2. 检查 dist/ 目录中的图片大小`);
-    console.log(`  3. 部署并测试加载速度`);
+    console.log(`  1. 原文件已直接覆盖，如需恢复请使用 Git 还原`);
+    console.log(`  2. 运行 npm run build 重新构建`);
+    console.log(`  3. 检查 dist/ 目录中的图片大小`);
+    console.log(`  4. 部署并测试加载速度`);
 }
 
 // 运行

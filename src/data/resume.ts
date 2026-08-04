@@ -77,6 +77,7 @@ export const getResumeHonors = (): ResumeHonor[] => {
         {id: '28', name: '2026中国高校计算机大赛-网络技术挑战赛A-ICV-西南赛区三等奖-视界巡警', level: '省赛', grade: '大三'},
         {id: '29', name: 'HarmonyOs应用开发者高级认证', level: '证书', grade: '大三'},
         {id: '30', name: '2026中国高校计算机大赛-AIGC创新赛-西南赛区二等奖-智课回声', level: '省赛', grade: '大三'},
+        {id: '31', name: '第十二届全国大学生统计建模大赛-校赛三等奖', level: '校赛', grade: '大三'},
     ]
 }
 

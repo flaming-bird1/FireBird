@@ -31,6 +31,80 @@
             了解笔者
           </button>
         </div>
+
+        <!-- 文章搜索 -->
+        <div class="search-box" ref="searchBoxRef">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18">
+              <path fill="currentColor" d="M15.5,14h-0.79l-0.28,-0.27C15.41,12.59 16,11.11 16,9.5A6.5,6.5 0 0,0 9.5,3A6.5,6.5 0 0,0 3,9.5A6.5,6.5 0 0,0 9.5,16C11.11,16 12.59,15.41 13.73,14.57L14,14.85V15.5L19,20.49L20.49,19L15.5,14M9.5,14C7,14 5,12 5,9.5C5,7 7,5 9.5,5C12,5 14,7 14,9.5C14,12 12,14 9.5,14Z"/>
+            </svg>
+            <input
+                class="search-input"
+                type="text"
+                v-model="searchKeyword"
+                placeholder="搜索文章：标题 / 描述 / 标签"
+                autocomplete="off"
+                @input="handleSearchInput"
+                @focus="handleSearchFocus"
+                @keydown.enter="handleSearchEnter"
+                @keydown.esc="closeSearch"
+                @keydown.down.prevent="moveHighlight(1)"
+                @keydown.up.prevent="moveHighlight(-1)"
+            />
+            <button
+                v-if="searchKeyword"
+                class="search-clear"
+                title="清空搜索"
+                @click="clearSearch"
+            >✕</button>
+          </div>
+
+          <!-- 搜索结果下拉面板 -->
+          <transition name="search-fade">
+            <div
+                v-if="showDropdown"
+                class="search-dropdown"
+                :style="dropdownStyle"
+                @mouseleave="highlightIndex = -1"
+            >
+              <div class="search-dropdown-header">
+                <span v-if="searchResults.length">共找到 {{ searchResults.length }} 篇文章</span>
+                <span v-else>未找到相关文章</span>
+              </div>
+
+              <ul v-if="searchResults.length" class="search-result-list">
+                <li
+                    v-for="(article, index) in searchResults"
+                    :key="article.id"
+                    class="search-result-item"
+                    :class="{ 'is-active': highlightIndex === index }"
+                    @mousedown.prevent="goToSearchResult(article.id)"
+                    @mouseenter="highlightIndex = index"
+                >
+                  <img
+                      class="result-cover"
+                      :src="getImageUrl(article.cover)"
+                      :alt="article.title"
+                  >
+                  <div class="result-info">
+                    <div class="result-title" v-html="highlightKeyword(article.title)"></div>
+                    <div class="result-meta">
+                      <span class="result-date">{{ formatDate(article.date) }}</span>
+                      <span class="result-tags">
+                        <span v-for="tag in article.tags" :key="tag" class="result-tag">{{ tag }}</span>
+                      </span>
+                    </div>
+                    <div class="result-desc" v-html="highlightKeyword(article.description)"></div>
+                  </div>
+                </li>
+              </ul>
+
+              <div v-else class="search-empty">
+                <span>暂无与「{{ searchKeyword }}」相关的文章</span>
+              </div>
+            </div>
+          </transition>
+        </div>
       </div>
 
       <!-- 滚动提示 -->
@@ -164,7 +238,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, onUnmounted} from 'vue'
+import {ref, computed, onMounted, onUnmounted} from 'vue'
 import {useRouter} from 'vue-router'
 import Header from '@/components/Header.vue'
 import {getAllArticles} from '@/data/articles.ts'
@@ -176,12 +250,29 @@ const router = useRouter()
 // 获取 base 路径（GitHub Pages 需要 /FireBird/）
 const baseUrl = import.meta.env.BASE_URL
 
+// 默认封面图列表（文件名按 default-cover + 递增数字命名，新增图片时按顺序加入此数组）
+const DEFAULT_COVERS = [
+  'default-cover01.png',
+  'default-cover02.png',
+]
+
+// 为无封面的文章随机分配一张默认封面（页面加载时固定，避免渲染时随机导致图片闪烁）
+const assignDefaultCovers = (articleList: Article[]) => {
+  return articleList.map(article => {
+    if (!article.cover) {
+      const randomIndex = Math.floor(Math.random() * DEFAULT_COVERS.length)
+      return {...article, cover: `/images/article_cover/${DEFAULT_COVERS[randomIndex]}`}
+    }
+    return article
+  })
+}
 
 // 处理图片路径（支持 undefined）
 const getImageUrl = (path: string | undefined) => {
-  // 如果路径为空或未定义，返回默认图片
+  // 如果路径为空或未定义，随机返回一张默认图片
   if (!path) {
-    return `${baseUrl}images/default-cover.jpg`
+    const randomIndex = Math.floor(Math.random() * DEFAULT_COVERS.length)
+    return `${baseUrl}images/article_cover/${DEFAULT_COVERS[randomIndex]}`
   }
   // 如果已经是完整 URL，直接返回
   if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -252,19 +343,29 @@ const goToAbout = () => {
 // 初始化数据
 onMounted(() => {
   const articlesData = getAllArticles()
-  recentArticles.value = articlesData.articles
+  // 无封面的文章分配随机默认封面
+  recentArticles.value = assignDefaultCovers(articlesData.articles)
   totalCount.setTarget(articlesData.total)
   tagCount.start()
   categoryCount.start()
 
   // 名言轮播定时器
   quoteTimer = setInterval(nextQuote, 4500)
+
+  // 搜索面板：点击外部关闭、滚动关闭、窗口变化重新定位
+  document.addEventListener('click', handleOutsideClick)
+  window.addEventListener('resize', handleResize)
+  mainScrollEl = document.querySelector<HTMLElement>('.app-main')
+  mainScrollEl?.addEventListener('scroll', handleMainScroll)
 })
 
 onUnmounted(() => {
   if (quoteTimer) {
     clearInterval(quoteTimer)
   }
+  document.removeEventListener('click', handleOutsideClick)
+  window.removeEventListener('resize', handleResize)
+  mainScrollEl?.removeEventListener('scroll', handleMainScroll)
 })
 
 // 跳转到文章详情
@@ -279,6 +380,128 @@ const formatDate = (dateString: string) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+// ==================== 文章搜索功能 ====================
+const searchKeyword = ref('')
+const showDropdown = ref(false)
+const highlightIndex = ref(-1)
+const searchBoxRef = ref<HTMLElement | null>(null)
+const dropdownStyle = ref({top: '0px', left: '0px', width: '300px'})
+let mainScrollEl: HTMLElement | null = null
+
+// 搜索匹配：标题 / 描述 / 标签（忽略大小写）
+const searchResults = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+  if (!keyword) return []
+  return recentArticles.value.filter(article => {
+    const title = article.title.toLowerCase()
+    const description = article.description.toLowerCase()
+    const tags = article.tags.join(' ').toLowerCase()
+    return title.includes(keyword) || description.includes(keyword) || tags.includes(keyword)
+  })
+})
+
+// 定位下拉面板（fixed 定位，避免被 banner 的 overflow 裁剪）
+const positionDropdown = () => {
+  const box = searchBoxRef.value
+  if (!box) return
+  const rect = box.getBoundingClientRect()
+  dropdownStyle.value = {
+    top: `${rect.bottom + 10}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`
+  }
+}
+
+const handleSearchInput = () => {
+  positionDropdown()
+  highlightIndex.value = -1
+  showDropdown.value = true
+}
+
+const handleSearchFocus = () => {
+  if (searchKeyword.value.trim()) {
+    positionDropdown()
+    showDropdown.value = true
+  }
+}
+
+// 回车：跳转高亮项或第一个结果（中文输入法确认时不触发）
+const handleSearchEnter = (event: KeyboardEvent) => {
+  if (event.isComposing) return
+  if (searchResults.value.length === 0) return
+  const targetIndex = highlightIndex.value >= 0 ? highlightIndex.value : 0
+  const article = searchResults.value[targetIndex]
+  if (article) goToArticle(article.id)
+  closeSearch()
+}
+
+// 上下键循环选择结果
+const moveHighlight = (step: number) => {
+  if (!showDropdown.value || searchResults.value.length === 0) return
+  const length = searchResults.value.length
+  highlightIndex.value = (highlightIndex.value + step + length) % length
+}
+
+const clearSearch = () => {
+  searchKeyword.value = ''
+  highlightIndex.value = -1
+  showDropdown.value = false
+}
+
+const closeSearch = () => {
+  showDropdown.value = false
+  highlightIndex.value = -1
+}
+
+const goToSearchResult = (id: string) => {
+  goToArticle(id)
+  closeSearch()
+}
+
+// 转义 HTML 特殊字符，防止注入
+const escapeHtml = (text: string) => {
+  return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+}
+
+// 关键词高亮（先转义再包裹 mark，保证高亮位置正确且安全）
+const highlightKeyword = (text: string) => {
+  const keyword = searchKeyword.value.trim()
+  const escapedText = escapeHtml(text)
+  if (!keyword) return escapedText
+  const escapedKeyword = escapeHtml(keyword)
+  const lowerText = escapedText.toLowerCase()
+  const lowerKeyword = escapedKeyword.toLowerCase()
+  const index = lowerText.indexOf(lowerKeyword)
+  if (index === -1) return escapedText
+  const matchLength = escapedKeyword.length
+  return (
+      escapedText.slice(0, index) +
+      `<mark>${escapedText.slice(index, index + matchLength)}</mark>` +
+      escapedText.slice(index + matchLength)
+  )
+}
+
+// 点击面板外部关闭
+const handleOutsideClick = (event: MouseEvent) => {
+  if (searchBoxRef.value && !searchBoxRef.value.contains(event.target as Node)) {
+    closeSearch()
+  }
+}
+
+// 主体滚动时关闭面板
+const handleMainScroll = () => {
+  if (showDropdown.value) closeSearch()
+}
+
+// 窗口尺寸变化时重新定位面板
+const handleResize = () => {
+  if (showDropdown.value) positionDropdown()
 }
 </script>
 
@@ -526,6 +749,225 @@ const formatDate = (dateString: string) => {
   transform: translateY(-1px);
 }
 
+/* ===== 文章搜索 ===== */
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  margin: 2.2rem auto 0;
+  opacity: 0;
+  /* 仅做透明度动画，避免 transform 影响下拉面板的 fixed 定位 */
+  animation: search-fade-in 0.9s ease 1.6s forwards;
+}
+
+@keyframes search-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-radius: 30px;
+  padding: 0.55rem 1.1rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  transition: all 0.35s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #7E6B8F;
+  box-shadow: 0 6px 24px rgba(126, 107, 143, 0.35);
+  transform: translateY(-1px);
+}
+
+.search-icon {
+  color: #7E6B8F;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  font-family: "STKaiti", "KaiTi", serif;
+  color: #333;
+  letter-spacing: 1px;
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: rgba(102, 102, 102, 0.65);
+}
+
+.search-clear {
+  border: none;
+  background: rgba(126, 107, 143, 0.15);
+  color: #7E6B8F;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+}
+
+.search-clear:hover {
+  background: #7E6B8F;
+  color: white;
+}
+
+/* 搜索结果下拉面板（fixed 定位，避免被 banner 的 overflow 裁剪） */
+.search-dropdown {
+  position: fixed;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(126, 107, 143, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px rgba(126, 107, 143, 0.3);
+  overflow: hidden;
+}
+
+.search-dropdown-header {
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  color: #7E6B8F;
+  background: rgba(126, 107, 143, 0.08);
+  border-bottom: 1px solid rgba(126, 107, 143, 0.15);
+  font-family: "STKaiti", "KaiTi", serif;
+  letter-spacing: 1px;
+}
+
+.search-result-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.8rem 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border-bottom: 1px solid rgba(126, 107, 143, 0.1);
+  align-items: center;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover,
+.search-result-item.is-active {
+  background: rgba(126, 107, 143, 0.1);
+}
+
+.result-cover {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(126, 107, 143, 0.2);
+  background: rgba(126, 107, 143, 0.1);
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-title {
+  font-size: 0.98rem;
+  color: #333;
+  font-family: "STKaiti", "KaiTi", serif;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.result-date {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.result-tags {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.result-tag {
+  font-size: 0.7rem;
+  color: #7E6B8F;
+  background: rgba(126, 107, 143, 0.12);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  border: 1px solid rgba(126, 107, 143, 0.2);
+}
+
+.result-desc {
+  font-size: 0.8rem;
+  color: #666;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-title mark,
+.result-desc mark {
+  background: rgba(196, 181, 214, 0.55);
+  color: #7E6B8F;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.search-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.9rem;
+  font-family: "STKaiti", "KaiTi", serif;
+}
+
+/* 搜索面板过渡动画 */
+.search-fade-enter-active,
+.search-fade-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.search-fade-enter-from,
+.search-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 /* 滚动提示 */
 .scroll-hint {
   position: absolute;
@@ -685,6 +1127,7 @@ const formatDate = (dateString: string) => {
   display: grid;
   grid-template-columns: 300px 1fr;
   gap: 1.5rem;
+  height: 350px; /* 固定卡片高度：日期/标签分行后仍保证描述区约 5 行可见 */
   background: rgba(255, 255, 255, 0.95);
   border-radius: 12px;
   overflow: hidden;
@@ -708,6 +1151,8 @@ const formatDate = (dateString: string) => {
   justify-content: center;
   overflow: hidden;
   background: rgba(245, 245, 245, 0.8);
+  height: 100%;
+  min-height: 0;
 }
 
 /* 封面渐变遮罩（hover 浮现） */
@@ -777,7 +1222,7 @@ const formatDate = (dateString: string) => {
 
 .cover-image {
   width: 100%;
-  height: 100%;
+  height: auto; /* 保持图片原始宽高比，不拉伸不变形 */
   object-fit: cover;
   transition: transform 0.3s ease;
 }
@@ -789,6 +1234,10 @@ const formatDate = (dateString: string) => {
 .article-card {
   padding: 1.5rem;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 .article-card::before {
@@ -804,11 +1253,13 @@ const formatDate = (dateString: string) => {
 
 .article-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+  flex-direction: column; /* 日期与标签分行显示 */
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
   font-size: 0.9rem;
   color: #666;
+  flex-shrink: 0;
 }
 
 .date-icon, .tag-icon {
@@ -824,6 +1275,7 @@ const formatDate = (dateString: string) => {
 .article-tags {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap; /* 标签较多时自动换行 */
 }
 
 .tag {
@@ -843,6 +1295,12 @@ const formatDate = (dateString: string) => {
   margin-bottom: 0.8rem;
   line-height: 1.4;
   font-family: "STKaiti", "KaiTi", serif;
+  flex-shrink: 0;
+  /* 超长标题限制最多两行，避免撑破固定高度的卡片 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .title-decoration {
@@ -853,12 +1311,18 @@ const formatDate = (dateString: string) => {
 .article-description {
   color: #666;
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto; /* 描述超出卡片固定高度时内部滚动 */
+  padding-right: 6px; /* 给滚动条预留间距 */
 }
 
 .article-footer {
   display: flex;
   justify-content: flex-end;
+  flex-shrink: 0;
+  margin-top: 1rem;
 }
 
 .read-more {
@@ -1144,6 +1608,11 @@ const formatDate = (dateString: string) => {
   .article-item {
     grid-template-columns: 1fr;
     gap: 0;
+    height: auto; /* 单列布局下取消固定高度，内容自适应 */
+  }
+
+  .article-card {
+    height: auto; /* 单列布局下取消固定高度 */
   }
 
   .article-cover {
@@ -1160,6 +1629,15 @@ const formatDate = (dateString: string) => {
   .banner {
     height: 40vh;
     padding: 0 15px;
+  }
+
+  .search-box {
+    max-width: 340px;
+    margin-top: 1.5rem;
+  }
+
+  .search-input {
+    font-size: 0.9rem;
   }
 
   .banner h1 {
@@ -1219,12 +1697,6 @@ const formatDate = (dateString: string) => {
 
   .article-card {
     padding: 1rem;
-  }
-
-  .article-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
   }
 
   .article-title {

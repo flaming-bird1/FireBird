@@ -310,8 +310,9 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 3rem;
+  /* 左右固定 3:1 比例：任何设备下比例一致，右侧栏始终在右侧 */
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  gap: 2rem;
   /* 默认 stretch：让侧边栏与文章列等高，目录 sticky 才有足够空间吸顶 */
 }
 
@@ -321,6 +322,7 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 0; /* 防止宽代码块/表格撑破 grid 轨道而挤压侧栏 */
 }
 
 .back-button {
@@ -472,6 +474,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  min-width: 0; /* 防止被 grid 轨道压缩时内容溢出 */
 }
 
 .widget {
@@ -649,14 +652,26 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-/* 平板及以下：文章与侧边栏改为单列布局 */
-@media (max-width: 1024px) {
+/* 大屏：间距更宽松（比例不变） */
+@media (min-width: 1367px) {
   .article-container {
-    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+}
+
+/* 小屏：收紧间距与内边距，左右 3:1 比例保持一致 */
+@media (max-width: 768px) {
+  .article-container {
+    padding: 0 12px;
+    gap: 1rem;
   }
 
-  .toc-widget {
-    position: static; /* 小屏时目录不跟随滚动 */
+  .article-left {
+    padding: 1.25rem;
+  }
+
+  .widget {
+    padding: 1rem;
   }
 }
 

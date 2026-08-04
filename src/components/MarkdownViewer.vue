@@ -243,6 +243,13 @@ watch(() => props.markdownContent, (newContent: string | undefined) => {
   padding: 0;
 }
 
+/* 代码块：宽内容时横向滚动，避免撑破文章容器 */
+:deep(.markdown-content pre) {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* mermaid 图表容器 */
 :deep(.markdown-content .mermaid) {
   display: flex;
@@ -346,6 +353,10 @@ watch(() => props.markdownContent, (newContent: string | undefined) => {
   width: 100%;
   border-collapse: collapse;
   margin: 1rem 0;
+  display: block; /* 宽表格时内部横向滚动，避免撑破文章容器 */
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 :deep(.markdown-content th),
