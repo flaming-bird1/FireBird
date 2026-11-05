@@ -78,8 +78,17 @@
               <button
                   ref="tabBtns"
                   class="tab-btn"
+                  :class="{ active: activeTab === 'publications' }"
+                  @click="activeTab = 'publications'; moveIndicator(3)"
+              >
+                📄 论文发表
+                <span class="tab-count">{{ resumePublications.length }}</span>
+              </button>
+              <button
+                  ref="tabBtns"
+                  class="tab-btn"
                   :class="{ active: activeTab === 'honors' }"
-                  @click="activeTab = 'honors'; moveIndicator(3)"
+                  @click="activeTab = 'honors'; moveIndicator(4)"
               >
                 🏆 荣誉奖项
               </button>
@@ -224,6 +233,44 @@
                 </section>
               </div>
 
+              <!-- 论文发表 -->
+              <div v-show="activeTab === 'publications'" class="tab-pane">
+                <section class="section">
+                  <h3 class="section-title">
+                    <span class="icon">📄</span>
+                    论文发表
+                  </h3>
+                  <div class="publications-list">
+                    <div class="publication-item" v-for="pub in resumePublications" :key="pub.id">
+                      <div class="publication-header">
+                        <h4>
+                          <span class="publication-id-badge">#{{ pub.id }}</span>
+                          {{ pub.title }}
+                        </h4>
+                        <span v-if="pub.status" class="publication-status" :class="pub.status === '已录用' ? 'pub-accepted' : ''">
+                          {{ pub.status }}
+                        </span>
+                      </div>
+                      <p class="publication-authors">{{ pub.authors }}</p>
+                      <p class="publication-venue">
+                        📌 {{ pub.venue }}
+                        <span v-if="pub.location">（{{ pub.location }}）</span>
+                        <span class="publication-date">· {{ pub.date }}</span>
+                      </p>
+                      <div class="publication-abstract">
+                        <span class="label">论文简介：</span>
+                        {{ pub.abstract }}
+                      </div>
+                      <div v-if="pub.tags" class="publication-tags">
+                        <span class="publication-tag" v-for="tag in pub.tags" :key="tag">
+                          {{ tag }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
               <!-- 荣誉奖项 -->
               <div v-show="activeTab === 'honors'" class="tab-pane">
                 <section class="section honors-section">
@@ -323,6 +370,10 @@
                   <span class="stat-label">项目</span>
                 </div>
                 <div class="stat-item">
+                  <span class="stat-number">{{ resumePublications.length }}</span>
+                  <span class="stat-label">论文</span>
+                </div>
+                <div class="stat-item">
                   <span class="stat-number">{{
                       Object.values(resumeSkills).reduce((sum, skills) => sum + (Array.isArray(skills) ? skills.length : 0), 0)
                     }}</span>
@@ -376,15 +427,17 @@ import {
   getResumeEducation,
   getResumeSkills,
   getResumeHonors,
-  getResumeProjects
+  getResumeProjects,
+  getResumePublications
 } from '@/data/resume'
-import type { ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor } from '@/types/resume'
+import type { ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor, ResumePublication } from '@/types/resume'
 
 const resumeBaseInfo = getResumeBaseInfo() as ResumeBaseInfo
 const resumeEducation = getResumeEducation() as ResumeEducation
 const resumeSkills = getResumeSkills()
 const resumeHonors = ref<ResumeHonor[]>(getResumeHonors())
 const resumeProjects = ref<ResumeProject[]>(getResumeProjects())
+const resumePublications = ref<ResumePublication[]>(getResumePublications())
 
 const activeTab = ref('education')
 
@@ -402,7 +455,7 @@ const moveIndicator = (index: number) => {
 }
 
 let resizeHandler: () => void = () => {
-  const index = ['education', 'skills', 'projects', 'honors'].indexOf(activeTab.value)
+  const index = ['education', 'skills', 'projects', 'publications', 'honors'].indexOf(activeTab.value)
   moveIndicator(Math.max(0, index))
 }
 
@@ -685,9 +738,14 @@ const renderMarkdown = (content: string) => {
   display: flex;
   border-bottom: 1px solid rgba(126, 107, 143, 0.2);
   background: #f8f6fa;
-  flex-wrap: wrap;
   flex-shrink: 0;
   position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabs-header::-webkit-scrollbar {
+  display: none;
 }
 
 /* Tab 滑动指示条 */
@@ -705,7 +763,7 @@ const renderMarkdown = (content: string) => {
 
 .tab-btn {
   flex: 1;
-  padding: 1rem 1.5rem;
+  padding: 1rem 0.5rem;
   font-size: 1rem;
   font-weight: 500;
   background: transparent;
@@ -718,7 +776,8 @@ const renderMarkdown = (content: string) => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
+  white-space: nowrap;
 }
 
 .tab-count {
@@ -1311,6 +1370,121 @@ const renderMarkdown = (content: string) => {
 }
 
 .project-tag {
+  background: rgba(126, 107, 143, 0.1);
+  color: #7e6b8f;
+  padding: 0.3rem 0.8rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* 论文发表 */
+.publications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.publication-item {
+  padding: 1rem;
+  border-left: 4px solid #7e6b8f;
+  background: rgba(126, 107, 143, 0.05);
+  border-radius: 0 8px 8px 0;
+  transition: all 0.3s ease;
+}
+
+.publication-item:hover {
+  background: rgba(126, 107, 143, 0.08);
+  transform: translateX(5px);
+}
+
+.publication-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.publication-header h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  color: #2c3e50;
+  font-size: 1.05rem;
+}
+
+.publication-id-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #7e6b8f, #9b8aae);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  font-family: monospace;
+}
+
+.publication-status {
+  background: #e0e0e0;
+  color: #666;
+  padding: 0.25rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.publication-status.pub-accepted {
+  background: linear-gradient(135deg, #6b8f7e, #5a7c6b);
+  color: white;
+}
+
+.publication-authors {
+  color: #555;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.publication-venue {
+  color: #888;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  background: rgba(126, 107, 143, 0.08);
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+}
+
+.publication-date {
+  color: #7e6b8f;
+}
+
+.publication-abstract {
+  color: #444;
+  line-height: 1.8;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+
+  .label {
+    font-weight: 600;
+    color: #7e6b8f;
+    margin-right: 0.5rem;
+  }
+}
+
+.publication-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.publication-tag {
   background: rgba(126, 107, 143, 0.1);
   color: #7e6b8f;
   padding: 0.3rem 0.8rem;

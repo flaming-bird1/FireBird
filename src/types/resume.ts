@@ -40,3 +40,16 @@ export interface ResumeHonor {
     level?: string      // 奖项级别（国家级/省级/校级）
     grade?: string      // 年级
 }
+
+// 论文发表
+export interface ResumePublication {
+    id: string
+    title: string       // 论文标题
+    authors: string     // 作者列表（* 为通讯作者）
+    venue: string       // 会议/期刊名称
+    location?: string   // 会议地点
+    date: string        // 发表/会议时间
+    status?: string     // 状态：已发表/已录用/在审
+    abstract: string    // 论文简介/摘要
+    tags?: string[]     // 技术标签
+}

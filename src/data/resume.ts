@@ -1,4 +1,4 @@
-import type {ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor} from '@/types/resume.ts'
+import type {ResumeBaseInfo, ResumeEducation, ResumeProject, ResumeHonor, ResumePublication} from '@/types/resume.ts'
 
 // 获取基础信息
 export const getResumeBaseInfo = (): ResumeBaseInfo => {
@@ -22,7 +22,7 @@ export const getResumeEducation = (): ResumeEducation => {
         degree: '本科',
         period: '2023年9月 - 2027年6月',
         status: '应届毕业生',
-        gpa: '3.62（五分制）',
+        gpa: '3.51（五分制）',
         courses: ['数据结构', '计算机网络', '计算机组成原理', '操作系统', '数据库', '计算机图形学', '机器学习', '地理信息系统']
     }
 }
@@ -72,12 +72,33 @@ export const getResumeHonors = (): ResumeHonor[] => {
         {id: '23', name: '2026年海峡两岸暨港澳地区大学生计算机创新作品赛四川省赛-省赛三等奖', level: '省赛', grade: '大三'},
         {id: '24', name: '2026年第二届全国大学生气象科技创新大赛-校赛二等奖', level: '校赛', grade: '大三'},
         {id: '25', name: '第十五届“中国软件杯”大学生软件设计大赛-校赛二等奖', level: '校赛', grade: '大三'},
-        {id: '26', name: '2026中国高校计算机大赛-网络技术挑战赛A-西南赛区二等奖-热网智防', level: '省赛', grade: '大三'},
+        {id: '26', name: '2026中国高校计算机大赛-网络技术挑战赛A-全国三等奖-热网智防', level: '国赛', grade: '大三'},
         {id: '27', name: '2026中国高校计算机大赛-网络技术挑战赛A-西南赛区三等奖-银龄智护', level: '省赛', grade: '大三'},
         {id: '28', name: '2026中国高校计算机大赛-网络技术挑战赛A-ICV-西南赛区三等奖-视界巡警', level: '省赛', grade: '大三'},
         {id: '29', name: 'HarmonyOs应用开发者高级认证', level: '证书', grade: '大三'},
         {id: '30', name: '2026中国高校计算机大赛-AIGC创新赛-西南赛区二等奖-智课回声', level: '省赛', grade: '大三'},
         {id: '31', name: '第十二届全国大学生统计建模大赛-校赛三等奖', level: '校赛', grade: '大三'},
+        {id: '32', name: '2026 年（第三届）大学生数据要素素质大赛-全国一等奖', level: '国赛', grade: '大三'},
+
+        // 大四
+        {id: '33', name: '2026年iCAN大学生创新创业大赛-快手·AI未来创造者挑战赛-省级二等奖', level: '省赛', grade: '大四'},
+    ]
+}
+
+// 获取论文发表
+export const getResumePublications = (): ResumePublication[] => {
+    return [
+        {
+            id: '1',
+            title: '基于地理探测器的甘孜州土地沙化成因及分区预警研究',
+            authors: '陈鹏，刘斌*，罗涵，何磊，王丽君',
+            venue: '2026 IEEE Asia-Pacific Geoscience and Remote Sensing Symposium——2026年IEEE亚太地球科学与遥感研讨会（AP-GARSS 2026）',
+            location: '中国青岛',
+            date: '2026年10月11-14日',
+            status: '已录用',
+            abstract: '利用地理探测器模型量化了甘孜州土地沙化的10项驱动因子贡献率，构建了危险性-脆弱性-暴露度综合风险评估模型，并划定了三级预警分区。',
+            tags: ['地理探测器', '土地沙化', '风险评估', 'GIS', '预警分区']
+        }
     ]
 }
 

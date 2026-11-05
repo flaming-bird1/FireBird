@@ -21,7 +21,7 @@
 
       <div class="banner-content">
         <h1 class="banner-title">烈焰飞鸟的个人博客</h1>
-        <p class="typing-text">不负青春 不负韶华</p>
+        <p class="typing-text">梦虽遥，追则能达；愿虽艰，持则可圆</p>
         <div class="chinese-border"></div>
         <div class="banner-buttons">
           <button class="banner-btn banner-btn-primary" @click="scrollToArticles">
@@ -133,8 +133,6 @@
                   v-for="article in recentArticles"
                   :key="article.id"
                   @click="goToArticle(article.id)"
-                  @mousemove="handleCardMove"
-                  @mouseleave="handleCardLeave"
               >
                 <!-- 文章封面 -->
                 <div class="article-cover">
@@ -309,20 +307,6 @@ let quoteTimer: ReturnType<typeof setInterval> | undefined
 
 const nextQuote = () => {
   currentQuoteIndex.value = (currentQuoteIndex.value + 1) % quotes.length
-}
-
-// 文章卡片鼠标跟随光斑
-const handleCardMove = (event: MouseEvent) => {
-  const card = event.currentTarget as HTMLElement
-  const rect = card.getBoundingClientRect()
-  card.style.setProperty('--mx', `${event.clientX - rect.left}px`)
-  card.style.setProperty('--my', `${event.clientY - rect.top}px`)
-}
-
-const handleCardLeave = (event: MouseEvent) => {
-  const card = event.currentTarget as HTMLElement
-  card.style.removeProperty('--mx')
-  card.style.removeProperty('--my')
 }
 
 // 滚动到文章列表
@@ -674,11 +658,11 @@ const handleResize = () => {
   font-size: 1.8rem;
   min-height: 2.5rem;
   overflow: hidden;
-  border-right: 4px solid rgba(255, 255, 255, 0.9);
+  border-right: 3px solid rgba(255, 255, 255, 0.75);
   white-space: nowrap;
-  width: 240px;
+  width: 0;
   margin: 1.5rem auto 0;
-  animation: typing 3.5s steps(7, end) 0.6s both, blink-caret 0.75s step-end 0.6s infinite;
+  animation: typingLoop 6s steps(17, end) infinite;
   font-family: "STKaiti", "KaiTi", serif;
   color: rgba(255, 255, 255, 0.95);
 }
@@ -1045,21 +1029,18 @@ const handleResize = () => {
   right: 0;
 }
 
-@keyframes typing {
-  from {
-    width: 0
+@keyframes typingLoop {
+  0% {
+    width: 0;
   }
-  to {
-    width: 240px
+  40% {
+    width: 100%;
   }
-}
-
-@keyframes blink-caret {
-  from, to {
-    border-color: transparent
+  60% {
+    width: 100%;
   }
-  50% {
-    border-color: rgba(255, 255, 255, 0.9)
+  100% {
+    width: 0;
   }
 }
 
@@ -1153,35 +1134,6 @@ const handleResize = () => {
   background: rgba(245, 245, 245, 0.8);
   height: 100%;
   min-height: 0;
-}
-
-/* 封面渐变遮罩（hover 浮现） */
-.article-cover::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(126, 107, 143, 0.5), transparent 55%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* 封面鼠标跟随光斑 */
-.article-cover::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(196, 181, 214, 0.45), transparent 70%);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.article-item:hover .article-cover::before,
-.article-item:hover .article-cover::after {
-  opacity: 1;
 }
 
 .chinese-corner {
@@ -1575,8 +1527,7 @@ const handleResize = () => {
 
   .banner p {
     font-size: 1.4rem;
-    width: 180px;
-    animation: typing 2.5s steps(7, end), blink-caret 0.75s step-end infinite;
+    animation: typingLoop 5s steps(17, end) infinite;
   }
 
   .chinese-seal {
@@ -1584,15 +1535,6 @@ const handleResize = () => {
     height: 60px;
     font-size: 2rem;
     top: -30px;
-  }
-
-  @keyframes typing {
-    from {
-      width: 0
-    }
-    to {
-      width: 180px
-    }
   }
 
   .container {
@@ -1662,8 +1604,7 @@ const handleResize = () => {
 
   .banner p {
     font-size: 1.2rem;
-    width: 150px;
-    animation: typing 2s steps(7, end), blink-caret 0.75s step-end infinite;
+    animation: typingLoop 4.5s steps(17, end) infinite;
   }
 
   .chinese-seal {
@@ -1671,15 +1612,6 @@ const handleResize = () => {
     height: 50px;
     font-size: 1.8rem;
     top: -25px;
-  }
-
-  @keyframes typing {
-    from {
-      width: 0
-    }
-    to {
-      width: 150px
-    }
   }
 
   .content {
@@ -1729,16 +1661,8 @@ const handleResize = () => {
 
   .banner p {
     font-size: 1rem;
-    width: 130px;
-  }
-
-  @keyframes typing {
-    from {
-      width: 0
-    }
-    to {
-      width: 130px
-    }
+    min-height: 2rem;
+    animation: typingLoop 4s steps(17, end) infinite;
   }
 
   .widget {

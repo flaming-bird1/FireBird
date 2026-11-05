@@ -120,11 +120,27 @@
 
     <!-- 图片查看器 -->
     <div class="image-viewer" v-if="showImageViewer" @click="closeImageViewer">
-      <div class="viewer-content">
-        <button class="viewer-close" @click="closeImageViewer">×</button>
-        <img :src="currentImage" alt="查看图片">
+      <button class="viewer-close" @click.stop="closeImageViewer">×</button>
+      <div class="viewer-content" @click.stop @wheel.prevent="handleViewerWheel">
+        <img
+            :src="currentImage"
+            alt="查看图片"
+            :style="viewerImgStyle"
+            draggable="false"
+            @mousedown="handleViewerMouseDown"
+            @mousemove="handleViewerMouseMove"
+            @mouseup="handleViewerMouseUp"
+            @mouseleave="handleViewerMouseUp"
+        >
         <button class="nav-btn prev" @click.stop="prevImage">‹</button>
         <button class="nav-btn next" @click.stop="nextImage">›</button>
+        <!-- 缩放工具栏 -->
+        <div class="viewer-toolbar" @click.stop>
+          <button class="tool-btn" @click="zoomOut" title="缩小">−</button>
+          <span class="zoom-level">{{ zoomPercent }}</span>
+          <button class="tool-btn" @click="zoomIn" title="放大">＋</button>
+          <button class="tool-btn" @click="resetZoom" title="重置">1:1</button>
+        </div>
       </div>
     </div>
     </div>
@@ -186,6 +202,7 @@ const viewImage = (images: string[], index: number) => {
   const processedImages = images.map(img => getImageUrl(img))
   currentImages.value = processedImages
   currentImageIndex.value = index
+  resetZoom()
   showImageViewer.value = true
 }
 
@@ -193,19 +210,77 @@ const closeImageViewer = () => {
   showImageViewer.value = false
   currentImages.value = []
   currentImageIndex.value = 0
+  resetZoom()
 }
 
 const prevImage = () => {
   currentImageIndex.value = currentImageIndex.value > 0
       ? currentImageIndex.value - 1
       : currentImages.value.length - 1
+  resetZoom()
 }
 
 const nextImage = () => {
   currentImageIndex.value = currentImageIndex.value < currentImages.value.length - 1
       ? currentImageIndex.value + 1
       : 0
+  resetZoom()
 }
+
+// ==================== 图片查看器：缩放与拖拽 ====================
+const viewerScale = ref(1)
+const viewerOffset = ref({ x: 0, y: 0 })
+const isViewerDragging = ref(false)
+let dragStartPos = { x: 0, y: 0 }
+let dragStartOffset = { x: 0, y: 0 }
+
+// 当前缩放百分比（用于工具栏显示）
+const zoomPercent = computed(() => `${Math.round(viewerScale.value * 100)}%`)
+
+const zoomIn = () => {
+  viewerScale.value = Math.min(4, +(viewerScale.value + 0.25).toFixed(2))
+}
+
+const zoomOut = () => {
+  viewerScale.value = Math.max(0.5, +(viewerScale.value - 0.25).toFixed(2))
+}
+
+const resetZoom = () => {
+  viewerScale.value = 1
+  viewerOffset.value = { x: 0, y: 0 }
+}
+
+// 滚轮缩放（向上放大、向下缩小，步进 0.1）
+const handleViewerWheel = (event: WheelEvent) => {
+  const delta = event.deltaY < 0 ? 0.1 : -0.1
+  viewerScale.value = Math.min(4, Math.max(0.5, +(viewerScale.value + delta).toFixed(2)))
+}
+
+// 拖拽平移（放大后查看细节）
+const handleViewerMouseDown = (event: MouseEvent) => {
+  isViewerDragging.value = true
+  dragStartPos = { x: event.clientX, y: event.clientY }
+  dragStartOffset = { ...viewerOffset.value }
+  event.preventDefault()
+}
+
+const handleViewerMouseMove = (event: MouseEvent) => {
+  if (!isViewerDragging.value) return
+  viewerOffset.value = {
+    x: dragStartOffset.x + event.clientX - dragStartPos.x,
+    y: dragStartOffset.y + event.clientY - dragStartPos.y,
+  }
+}
+
+const handleViewerMouseUp = () => {
+  isViewerDragging.value = false
+}
+
+// 图片样式：缩放 + 平移（放大时显示抓手光标）
+const viewerImgStyle = computed(() => ({
+  transform: `translate(${viewerOffset.value.x}px, ${viewerOffset.value.y}px) scale(${viewerScale.value})`,
+  cursor: isViewerDragging.value ? 'grabbing' : viewerScale.value > 1 ? 'grab' : 'default',
+}))
 
 const formatTime = (timeString: string) => {
   const time = new Date(timeString)
@@ -604,22 +679,7 @@ const formatTime = (timeString: string) => {
   transition: transform 0.4s ease-in-out;
 }
 
-/* 图片 hover 遮罩 + 放大提示 */
-.image-item::after {
-  content: '⤢';
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(126, 107, 143, 0.35);
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
+/* 图片 hover：仅放大与阴影，不加遮罩（避免图片变色） */
 .image-item:hover {
   transform: scale(1.03);
   box-shadow: 0 6px 16px rgba(126, 107, 143, 0.35);
@@ -628,10 +688,6 @@ const formatTime = (timeString: string) => {
 
 .image-item:hover img {
   transform: scale(1.08);
-}
-
-.image-item:hover::after {
-  opacity: 1;
 }
 
 
@@ -796,11 +852,12 @@ const formatTime = (timeString: string) => {
 
 .viewer-content {
   position: relative;
-  max-width: 90%;
-  max-height: 90%;
+  width: 90%; /* 确定尺寸：让 img 的 max-height 100% 生效，保证横版/竖版图片完整显示 */
+  height: 90%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden; /* 缩放后超出部分裁剪，通过拖拽查看 */
   animation: viewer-zoom-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -818,14 +875,19 @@ const formatTime = (timeString: string) => {
 .viewer-content img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* 确保图片填充整个容器，并保持其原始比例。*/
+  width: auto;
+  height: auto;
+  object-fit: contain; /* 保持原始比例完整显示，不裁剪 */
   border-radius: 8px;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform;
 }
 
 .viewer-close {
   position: absolute;
-  top: -40px;
-  right: 0;
+  top: 20px;
+  right: 20px;
   background: none;
   border: none;
   color: white;
@@ -843,6 +905,51 @@ const formatTime = (timeString: string) => {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   color: #c5a7df;
+}
+
+/* 缩放工具栏 */
+.viewer-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 30px;
+  padding: 0.35rem 0.7rem;
+  z-index: 10000;
+}
+
+.tool-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.tool-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.zoom-level {
+  color: white;
+  font-size: 0.9rem;
+  min-width: 44px;
+  text-align: center;
+  font-family: "STKaiti", "KaiTi", serif;
 }
 
 .nav-btn {
