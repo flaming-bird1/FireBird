@@ -19,6 +19,7 @@ export interface ResumeEducation {
     status?: string     // 当前状态：在读/应届毕业生/已毕业
     gpa?: string        // 绩点：3.8/4.0 或 87.6/100
     courses: string[]   // 主修课程
+    scholarships?: string[] // 获得奖学金（从荣誉奖项中复制）
 }
 
 // 项目经验

@@ -135,6 +135,17 @@
           </span>
                       </div>
                     </div>
+
+                    <!-- 获得奖学金 -->
+                    <div v-if="resumeEducation.scholarships && resumeEducation.scholarships.length" class="scholarships">
+                      <h5>🎖️ 获得奖学金：</h5>
+                      <ul class="scholarship-list">
+                        <li class="scholarship-item" v-for="item in resumeEducation.scholarships" :key="item">
+                          <span class="scholarship-icon">🏅</span>
+                          <span class="scholarship-name">{{ item }}</span>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -501,14 +512,15 @@ const levelOrder: Record<string, number> = {
 }
 
 // 年级顺序
-const gradeOrder = ['大一', '大二', '大三']
+const gradeOrder = ['大一', '大二', '大三', '大四']
 
 // 按年级分组，并在每个年级内按国赛 > 省赛 > 校赛 > 证书排序
 const groupedByGrade = computed(() => {
   const grouped: Record<string, ResumeHonor[]> = {
     '大一': [],
     '大二': [],
-    '大三': []
+    '大三': [],
+    '大四': []
   }
 
   allHonors.value.forEach(honor => {
@@ -1152,6 +1164,51 @@ const renderMarkdown = (content: string) => {
 .course-tag:hover {
   background: rgba(126, 107, 143, 0.2);
   transform: translateY(-1px);
+}
+
+/* 获得奖学金 */
+.scholarships {
+  margin-top: 1rem;
+}
+
+.scholarships h5 {
+  margin-bottom: 0.6rem;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.scholarship-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+}
+
+.scholarship-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(126, 107, 143, 0.08), rgba(126, 107, 143, 0.03));
+  border-left: 3px solid #7e6b8f;
+  transition: all 0.2s ease;
+
+  .scholarship-icon {
+    font-size: 1.05rem;
+  }
+
+  .scholarship-name {
+    color: #444;
+    font-size: 0.9rem;
+  }
+}
+
+.scholarship-item:hover {
+  background: rgba(126, 107, 143, 0.14);
+  transform: translateX(3px);
 }
 
 /* 技能专长 */
